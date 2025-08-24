@@ -1,0 +1,109 @@
+{
+  "tech_stack": [
+    "Kotlin",
+    "Jetpack Compose",
+    "Android SDK",
+    "Firebase (Auth, Firestore)",
+    "Retrofit",
+    "TensorFlow Lite",
+    "DataStore",
+    "Coroutines",
+    "ViewModel",
+    "Repository Pattern"
+  ],
+  "features": [
+    {
+      "name": "Authentication System",
+      "description": "User registration, login, and authentication management using Firebase Auth",
+      "files": [
+        "app/src/main/java/com/example/matricareog/viewmodels/AuthViewModel.kt",
+        "app/src/main/java/com/example/matricareog/repository/UserRepository.kt",
+        "app/src/main/java/com/example/matricareog/screens/authScreens/LoginScreen.kt",
+        "app/src/main/java/com/example/matricareog/screens/authScreens/SignUpScreen.kt",
+        "app/src/main/java/com/example/matricareog/screens/authScreens/LoginSignup.kt"
+      ]
+    },
+    {
+      "name": "AI Pregnancy Chatbot",
+      "description": "API-based chatbot for pregnancy-related questions using external service",
+      "files": [
+        "app/src/main/java/com/example/matricareog/chatbot/PregnancyChatbot.kt",
+        "app/src/main/java/com/example/matricareog/chatbot/ApiClient.kt",
+        "app/src/main/java/com/example/matricareog/chatbot/ChatbotApiService.kt",
+        "app/src/main/java/com/example/matricareog/screens/ChatbotScreen.kt",
+        "app/src/main/java/com/example/matricareog/viewmodels/ChatbotViewModel.kt"
+      ]
+    },
+    {
+      "name": "Medical History Tracking",
+      "description": "Input screens for collecting and storing pregnancy health data",
+      "files": [
+        "app/src/main/java/com/example/matricareog/screens/inputScreens/InputScreenOne.kt",
+        "app/src/main/java/com/example/matricareog/screens/inputScreens/InputScreenTwo.kt",
+        "app/src/main/java/com/example/matricareog/repository/MedicalHistoryRepository.kt",
+        "app/src/main/java/com/example/matricareog/viewmodels/MedicalHistoryViewModel.kt"
+      ]
+    },
+    {
+      "name": "Health Report Analysis",
+      "description": "AI-powered health analysis using TensorFlow Lite model",
+      "files": [
+        "app/src/main/java/com/example/matricareog/screens/ReportAnalysisScreen.kt",
+        "app/src/main/java/com/example/matricareog/viewmodels/ReportAnalysisViewModel.kt",
+        "app/src/main/java/com/example/matricareog/repository/ReportRepository.kt",
+        "app/src/main/assets/medical_risk_model.tflite"
+      ]
+    },
+    {
+      "name": "Maternal Guide",
+      "description": "Educational content for pregnancy including diet plans, yoga, and guidelines",
+      "files": [
+        "app/src/main/java/com/example/matricareog/screens/maternalGuide/MaternalGuideScreen.kt",
+        "app/src/main/java/com/example/matricareog/screens/maternalGuide/DietPlanScreen.kt",
+        "app/src/main/java/com/example/matricareog/screens/maternalGuide/YogaExercisesScreen.kt",
+        "app/src/main/java/com/example/matricareog/screens/maternalGuide/DosAndDontsScreen.kt"
+      ]
+    },
+    {
+      "name": "Data Management",
+      "description": "Local data storage using DataStore and Firebase Firestore integration",
+      "files": [
+        "app/src/main/java/com/example/matricareog/DataStoreManager.kt",
+        "app/src/main/java/com/example/matricareog/repository/MatriCareRepository.kt",
+        "app/src/main/java/com/example/matricareog/viewmodels/MatriCareViewModel.kt"
+      ]
+    },
+    {
+      "name": "Navigation System",
+      "description": "Compose Navigation with route management and screen transitions",
+      "files": [
+        "app/src/main/java/com/example/matricareog/MainActivity.kt"
+      ]
+    },
+    {
+      "name": "Welcome and Onboarding",
+      "description": "Multi-screen welcome flow and user onboarding experience",
+      "files": [
+        "app/src/main/java/com/example/matricareog/screens/welcomeScreens/WelcomeScreenOne.kt",
+        "app/src/main/java/com/example/matricareog/screens/welcomeScreens/WelcomeScreenTwo.kt",
+        "app/src/main/java/com/example/matricareog/screens/welcomeScreens/WelcomeScreenThree.kt",
+        "app/src/main/java/com/example/matricareog/screens/welcomeScreens/GetStarted.kt",
+        "app/src/main/java/com/example/matricareog/screens/SplashScreen.kt"
+      ]
+    },
+    {
+      "name": "Home Dashboard",
+      "description": "Main home screen with navigation to all app features",
+      "files": [
+        "app/src/main/java/com/example/matricareog/screens/HomeScreen.kt"
+      ]
+    },
+    {
+      "name": "Graph Reports",
+      "description": "Data visualization and reporting using MPAndroidChart",
+      "files": [
+        "app/src/main/java/com/example/matricareog/screens/GraphReportScreen.kt"
+      ]
+    }
+  ]
+}

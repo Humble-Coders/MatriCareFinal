@@ -1,0 +1,15 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8080",
+  "executionArgs": {
+    "projectName": "MatriCareNew",
+    "projectPath": "/Users/ishankgoyal/AndroidStudioProjects/MatriCareNew",
+    "testIds": [],
+    "additionalInstruction": "Focus on testing Kotlin and Jetpack Compose files for logic errors, potential bugs, and Firebase integration issues. Simulate backend calls where necessary and identify areas for improvement.",
+    "envs": {
+      "API_KEY": ""
+    }
+  }
+}

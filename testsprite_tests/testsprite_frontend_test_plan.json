@@ -1,0 +1,198 @@
+{
+  "project_name": "MatriCareNew",
+  "test_plan": [
+    {
+      "id": "auth_flow_test",
+      "name": "Authentication Flow Testing",
+      "description": "Test user registration, login, and authentication flow",
+      "test_cases": [
+        {
+          "name": "User Registration Validation",
+          "description": "Test form validation for signup including email format, password strength, and terms acceptance",
+          "files": ["app/src/main/java/com/example/matricareog/screens/authScreens/SignUpScreen.kt", "app/src/main/java/com/example/matricareog/viewmodels/AuthViewModel.kt"]
+        },
+        {
+          "name": "User Login Validation",
+          "description": "Test login form validation and error handling",
+          "files": ["app/src/main/java/com/example/matricareog/screens/authScreens/LoginScreen.kt", "app/src/main/java/com/example/matricareog/viewmodels/AuthViewModel.kt"]
+        },
+        {
+          "name": "Firebase Auth Integration",
+          "description": "Test Firebase authentication integration and error handling",
+          "files": ["app/src/main/java/com/example/matricareog/repository/UserRepository.kt"]
+        }
+      ]
+    },
+    {
+      "id": "chatbot_integration_test",
+      "name": "AI Chatbot Integration Testing",
+      "description": "Test the pregnancy chatbot API integration and error handling",
+      "test_cases": [
+        {
+          "name": "API Health Check",
+          "description": "Test API health endpoint and connection status",
+          "files": ["app/src/main/java/com/example/matricareog/chatbot/PregnancyChatbot.kt", "app/src/main/java/com/example/matricareog/chatbot/ApiClient.kt"]
+        },
+        {
+          "name": "Question Processing",
+          "description": "Test question processing and response handling",
+          "files": ["app/src/main/java/com/example/matricareog/chatbot/PregnancyChatbot.kt", "app/src/main/java/com/example/matricareog/chatbot/ChatbotApiService.kt"]
+        },
+        {
+          "name": "Error Handling",
+          "description": "Test network error handling and fallback responses",
+          "files": ["app/src/main/java/com/example/matricareog/chatbot/PregnancyChatbot.kt"]
+        }
+      ]
+    },
+    {
+      "id": "medical_data_input_test",
+      "name": "Medical Data Input Testing",
+      "description": "Test medical history input screens and data validation",
+      "test_cases": [
+        {
+          "name": "Input Validation",
+          "description": "Test input field validation and data type checking",
+          "files": ["app/src/main/java/com/example/matricareog/screens/inputScreens/InputScreenOne.kt", "app/src/main/java/com/example/matricareog/screens/inputScreens/InputScreenTwo.kt"]
+        },
+        {
+          "name": "Data Persistence",
+          "description": "Test data storage and retrieval from Firebase",
+          "files": ["app/src/main/java/com/example/matricareog/repository/MedicalHistoryRepository.kt", "app/src/main/java/com/example/matricareog/viewmodels/MedicalHistoryViewModel.kt"]
+        }
+      ]
+    },
+    {
+      "id": "health_analysis_test",
+      "name": "Health Analysis Testing",
+      "description": "Test TensorFlow Lite model integration and health report generation",
+      "test_cases": [
+        {
+          "name": "Model Loading",
+          "description": "Test TensorFlow Lite model loading and initialization",
+          "files": ["app/src/main/java/com/example/matricareog/screens/ReportAnalysisScreen.kt", "app/src/main/assets/medical_risk_model.tflite"]
+        },
+        {
+          "name": "Data Processing",
+          "description": "Test health data processing and analysis",
+          "files": ["app/src/main/java/com/example/matricareog/viewmodels/ReportAnalysisViewModel.kt", "app/src/main/java/com/example/matricareog/repository/ReportRepository.kt"]
+        }
+      ]
+    },
+    {
+      "id": "navigation_test",
+      "name": "Navigation and Routing Testing",
+      "description": "Test navigation flow and screen transitions",
+      "test_cases": [
+        {
+          "name": "Route Management",
+          "description": "Test navigation routes and parameter passing",
+          "files": ["app/src/main/java/com/example/matricareog/MainActivity.kt"]
+        },
+        {
+          "name": "Screen Transitions",
+          "description": "Test screen navigation and back stack management",
+          "files": ["app/src/main/java/com/example/matricareog/MainActivity.kt"]
+        }
+      ]
+    },
+    {
+      "id": "data_management_test",
+      "name": "Data Management Testing",
+      "description": "Test local data storage and Firebase integration",
+      "test_cases": [
+        {
+          "name": "DataStore Operations",
+          "description": "Test local data persistence using DataStore",
+          "files": ["app/src/main/java/com/example/matricareog/DataStoreManager.kt"]
+        },
+        {
+          "name": "Firebase Operations",
+          "description": "Test Firestore read/write operations and error handling",
+          "files": ["app/src/main/java/com/example/matricareog/repository/MatriCareRepository.kt", "app/src/main/java/com/example/matricareog/repository/UserRepository.kt"]
+        }
+      ]
+    },
+    {
+      "id": "ui_component_test",
+      "name": "UI Component Testing",
+      "description": "Test Jetpack Compose UI components and state management",
+      "test_cases": [
+        {
+          "name": "Compose State Management",
+          "description": "Test state hoisting and UI state management",
+          "files": ["app/src/main/java/com/example/matricareog/screens/HomeScreen.kt", "app/src/main/java/com/example/matricareog/screens/ChatbotScreen.kt"]
+        },
+        {
+          "name": "Theme and Styling",
+          "description": "Test theme application and consistent styling",
+          "files": ["app/src/main/java/com/example/matricareog/ui/theme/Theme.kt", "app/src/main/java/com/example/matricareog/ui/theme/Color.kt"]
+        }
+      ]
+    },
+    {
+      "id": "coroutine_test",
+      "name": "Coroutine and Async Testing",
+      "description": "Test coroutine usage and asynchronous operations",
+      "test_cases": [
+        {
+          "name": "Coroutine Scopes",
+          "description": "Test proper coroutine scope management and lifecycle",
+          "files": ["app/src/main/java/com/example/matricareog/MatricareApplication.kt", "app/src/main/java/com/example/matricareog/viewmodels/AuthViewModel.kt"]
+        },
+        {
+          "name": "Async Operations",
+          "description": "Test async operations and error handling",
+          "files": ["app/src/main/java/com/example/matricareog/chatbot/PregnancyChatbot.kt", "app/src/main/java/com/example/matricareog/repository/UserRepository.kt"]
+        }
+      ]
+    }
+  ],
+  "potential_issues": [
+    {
+      "category": "Firebase Integration",
+      "issues": [
+        "Network connectivity handling",
+        "Firebase Auth state management",
+        "Firestore offline/online sync",
+        "API key security"
+      ]
+    },
+    {
+      "category": "Data Validation",
+      "issues": [
+        "Input sanitization",
+        "Data type validation",
+        "Required field validation",
+        "Data format consistency"
+      ]
+    },
+    {
+      "category": "Error Handling",
+      "issues": [
+        "Network error recovery",
+        "User-friendly error messages",
+        "Graceful degradation",
+        "Exception propagation"
+      ]
+    },
+    {
+      "category": "Performance",
+      "issues": [
+        "Memory leaks in ViewModels",
+        "Coroutine cancellation",
+        "Image loading optimization",
+        "Database query efficiency"
+      ]
+    },
+    {
+      "category": "Security",
+      "issues": [
+        "Input validation",
+        "Data encryption",
+        "API endpoint security",
+        "User permission checks"
+      ]
+    }
+  ]
+}
