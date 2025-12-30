@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.matricareog" />
-                  <option name="mobileSdkAppId" value="1:770229381671:android:f0ca757a56d4233e5dbc02" />
-                  <option name="projectId" value="matricareog" />
-                  <option name="projectNumber" value="770229381671" />
+                  <option name="appId" value="com.humblecoders.matricareog" />
+                  <option name="mobileSdkAppId" value="1:253709752262:android:338f79619017633a5a84c7" />
+                  <option name="projectId" value="matricare-f10a5" />
+                  <option name="projectNumber" value="253709752262" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

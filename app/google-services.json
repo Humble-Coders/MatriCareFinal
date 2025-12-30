@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "770229381671",
-    "project_id": "matricareog",
-    "storage_bucket": "matricareog.firebasestorage.app"
+    "project_number": "253709752262",
+    "project_id": "matricare-f10a5",
+    "storage_bucket": "matricare-f10a5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:770229381671:android:f0ca757a56d4233e5dbc02",
+        "mobilesdk_app_id": "1:253709752262:android:338f79619017633a5a84c7",
         "android_client_info": {
-          "package_name": "com.example.matricareog"
+          "package_name": "com.humblecoders.matricareog"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDfdJK-JxLQok5KUAbhoJRidTz6RZgtQKk"
+          "current_key": "AIzaSyDFRlhz1Kk-AZhUMPHakrnPtk5eCie0dC8"
         }
       ],
       "services": {

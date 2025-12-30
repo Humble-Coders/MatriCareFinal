@@ -11,7 +11,7 @@ kapt {
 }
 
 android {
-    namespace = "com.example.matricareog"
+    namespace = "com.humblecoders.matricareog"
     compileSdk = 35
 
     // TensorFlow configuration
@@ -20,11 +20,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.matricareog"
+        applicationId = "com.humblecoders.matricareog"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -139,7 +139,10 @@ dependencies {
 
 
     // DataStore
-    implementation("androidx.datastore:datastore-preferences:1.1.1");
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    
+    // Annotations for ProGuard
+    implementation("androidx.annotation:annotation:1.7.1")
 
     // Image loading
     implementation("io.coil-kt:coil-compose:2.6.0")
