@@ -41,14 +41,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -59,9 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
 import com.humblecoders.matricareog.viewmodels.AuthViewModel
-import com.humblecoders.matricareog.DataStoreManager
 import com.humblecoders.matricareog.components.DisclaimerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,30 +73,13 @@ fun HomeScreen(
     onDoClicked: () -> Unit = {},
     onChatbotClicked: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val dataStoreManager = remember { DataStoreManager(context) }
-    val coroutineScope = rememberCoroutineScope()
-    
     val currentUserState = authViewModel.currentUser.collectAsState()
     val currentUser = currentUserState.value
     val userName = currentUser?.fullName?.split(" ")?.firstOrNull() ?: "User"
     val userId = currentUser?.uid ?: ""
     
-    // Disclaimer state
-    val disclaimerShown by dataStoreManager.disclaimerShown.collectAsState(initial = false)
-    var showDisclaimerDialog by remember { mutableStateOf(false) }
+    // Disclaimer state - only shown when info button is clicked
     var showInfoDialog by remember { mutableStateOf(false) }
-    var hasCheckedDisclaimer by remember { mutableStateOf(false) }
-    
-    // Show disclaimer on first visit to home screen (only once)
-    LaunchedEffect(disclaimerShown, hasCheckedDisclaimer) {
-        if (!hasCheckedDisclaimer && !disclaimerShown) {
-            showDisclaimerDialog = true
-            hasCheckedDisclaimer = true
-        } else if (!hasCheckedDisclaimer) {
-            hasCheckedDisclaimer = true
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -165,19 +143,7 @@ fun HomeScreen(
         }
     }
     
-    // Disclaimer Dialogs
-    if (showDisclaimerDialog) {
-        DisclaimerDialog(
-            isFirstTime = true,
-            onDismiss = { showDisclaimerDialog = false },
-            onConfirm = {
-                coroutineScope.launch {
-                    dataStoreManager.markDisclaimerShown()
-                }
-            }
-        )
-    }
-    
+    // Disclaimer Dialog - only shown when info button is clicked
     if (showInfoDialog) {
         DisclaimerDialog(
             isFirstTime = false,

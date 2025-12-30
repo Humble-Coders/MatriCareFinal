@@ -62,65 +62,73 @@ fun WelcomeScreenTwo(
 
         Column(
             modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Section: Logo, Image, Text
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Top section - Logo (fixed at top)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 60.dp, bottom = 40.dp)
-                ) {
-                    Text(
-                        text = "Matri",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "care",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = pinkColor
-                    )
-                }
+                Text(
+                    text = "Matri",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Text(
+                    text = "care",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = pinkColor
+                )
+            }
 
+            // Middle section - Image and text (centered, takes available space)
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = true)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 Image(
                     painter = painterResource(id = R.drawable.welcomescreen02),
                     contentDescription = "Pregnant woman",
                     modifier = Modifier
-                        .size(280.dp)
+                        .sizeIn(maxWidth = 320.dp, maxHeight = 320.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
 
                 Text(
                     text = "Welcome",
-                    fontSize = 28.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
-                    modifier = Modifier.padding(top = 32.dp)
+                    modifier = Modifier.padding(top = 24.dp)
                 )
 
                 Text(
                     text = "Welcome to Matricare, your companion through every step of your pregnancy journey.",
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = Color.Gray,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                 )
             }
 
-            // Bottom Section: Dots + Buttons + Home Indicator
+            // Bottom section - Dots and buttons (fixed at bottom, always visible)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(bottom = 32.dp) // Add extra bottom padding
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(bottom = 24.dp),
+                    modifier = Modifier.padding(bottom = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     repeat(4) { index ->
@@ -136,13 +144,13 @@ fun WelcomeScreenTwo(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 16.dp), // Add vertical padding
+                        .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(
                         onClick = onSkipClicked,
-                        modifier = Modifier.padding(8.dp) // Add button padding
+                        modifier = Modifier.padding(8.dp)
                     ) {
                         Text(
                             text = "SKIP",
@@ -152,27 +160,23 @@ fun WelcomeScreenTwo(
                         )
                     }
 
-                    Box(
-                        modifier = Modifier.padding(8.dp) // Move padding to container
+                    Button(
+                        onClick = onNextClicked,
+                        modifier = Modifier
+                            .width(120.dp)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = pinkColor
+                        ),
+                        shape = RoundedCornerShape(25.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp)
                     ) {
-                        Button(
-                            onClick = onNextClicked,
-                            modifier = Modifier
-                                .width(120.dp)
-                                .height(56.dp), // Increase height for better text clearance
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = pinkColor
-                            ),
-                            shape = RoundedCornerShape(25.dp),
-                            contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp)
-                        ) {
-                            Text(
-                                text = "NEXT",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+                        Text(
+                            text = "NEXT",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             }
