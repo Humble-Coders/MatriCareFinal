@@ -57,6 +57,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.humblecoders.matricareog.viewmodels.AuthViewModel
+import java.time.LocalTime
+import java.time.ZoneId
 import com.humblecoders.matricareog.components.DisclaimerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +69,7 @@ fun HomeScreen(
     onMaternalGuideClicked: () -> Unit = {},
     onReportHistoryClicked: () -> Unit = {},
     authViewModel: AuthViewModel,
-    onSettingsClicked: () -> Unit = {},
+    onSettingsClicked: () -> Unit = {}, //callback functins wiht empty lambda
     onDietClicked: () -> Unit = {},
     onYogaClicked: () -> Unit = {},
     onDoClicked: () -> Unit = {},
@@ -75,7 +77,8 @@ fun HomeScreen(
 ) {
     val currentUserState = authViewModel.currentUser.collectAsState()
     val currentUser = currentUserState.value
-    val userName = currentUser?.fullName?.split(" ")?.firstOrNull() ?: "User"
+    val userName = currentUser?.fullName?.split(" ")?.firstOrNull() ?: "User"//extracts first name from full name
+    //split separates full name to words gets the firts word or null instead of crashing and print user
     val userId = currentUser?.uid ?: ""
     
     // Disclaimer state - only shown when info button is clicked
@@ -94,7 +97,7 @@ fun HomeScreen(
             )
     ) {
         // Header Section
-        HeaderSection(
+        HeaderSection(//passing authvuewmodel here
             authViewModel = authViewModel,
             onSettingsClicked = onSettingsClicked,
             onInfoClicked = { showInfoDialog = true }
@@ -248,7 +251,7 @@ private fun WelcomeSection(userName: String) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Good morning,",
+            text = timeBasedGreeting(),
             fontSize = 16.sp,
             color = Color(0xFF666666),
             fontWeight = FontWeight.Normal
@@ -341,7 +344,7 @@ private fun HealthTrackingCard(onClick: () -> Unit) {
                 Icon(
                     imageVector = Icons.Default.MonitorHeart,
                     contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.3f),
+                    tint = Color.White.copy(alpha = 0.3f), //30 percent visible 70 percent Transparent
                     modifier = Modifier.size(80.dp)
                 )
             }
@@ -395,7 +398,7 @@ private fun QuickActionsSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                EnhancedQuickActionCard(
+                EnhancedQuickActionCard(//better icons colors designs
                     title = "Maternal Guide",
                     subtitle = "Expert guidance & tips",
                     icon = Icons.AutoMirrored.Filled.MenuBook,
@@ -746,6 +749,17 @@ private fun EnhancedWellnessProgramCard(
                 }
             }
         }
+    }
+}
+
+/** Morning, afternoon, evening, or night based on device local time. */
+private fun timeBasedGreeting(): String {
+    val hour = LocalTime.now(ZoneId.systemDefault()).hour
+    return when (hour) {
+        in 5..11 -> "Good morning,"
+        in 12..16 -> "Good afternoon,"
+        in 17..20 -> "Good evening,"
+        else -> "Good night,"
     }
 }
 
