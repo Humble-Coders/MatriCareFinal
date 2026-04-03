@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -54,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.humblecoders.matricareog.viewmodels.AuthViewModel
@@ -395,7 +398,9 @@ private fun QuickActionsSection(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max),//makes row adopt the height of tallest intrinsic child
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 EnhancedQuickActionCard(//better icons colors designs
@@ -405,7 +410,9 @@ private fun QuickActionsSection(
                     bgGradient = listOf(Color(0xFFE8F5E8), Color(0xFFF1F8E9)),
                     iconBgColor = Color(0xFF2E7D32),
                     iconColor = Color.White,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     onClick = onMaternalGuideClicked
                 )
 
@@ -416,7 +423,9 @@ private fun QuickActionsSection(
                     bgGradient = listOf(Color(0xFFF0F4FF), Color(0xFFE3F2FD)),
                     iconBgColor = Color(0xFF1976D2),
                     iconColor = Color.White,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     onClick = {
                         onReportHistoryClicked()
                         onNavigateToReports(userId)
@@ -453,6 +462,7 @@ private fun EnhancedQuickActionCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .background(
                     brush = Brush.verticalGradient(bgGradient),
                     shape = RoundedCornerShape(20.dp)
@@ -461,6 +471,7 @@ private fun EnhancedQuickActionCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .fillMaxHeight()
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -493,7 +504,9 @@ private fun EnhancedQuickActionCard(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A1A1A),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -503,10 +516,14 @@ private fun EnhancedQuickActionCard(
                     fontSize = 12.sp,
                     color = Color(0xFF666666),
                     textAlign = TextAlign.Center,
-                    lineHeight = 16.sp
+                    lineHeight = 16.sp,
+                    minLines = 2,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
                 // Action indicator
                 Row(
