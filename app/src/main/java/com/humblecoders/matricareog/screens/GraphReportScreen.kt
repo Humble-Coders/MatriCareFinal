@@ -546,7 +546,7 @@ private fun getChartDataForParameter(
     selectedParameter: String
 ): Pair<List<Double>, List<String>> {
     return when (selectedParameter.lowercase()) {
-        "hemoglobin" -> {
+        "hemoglobin", "haemoglobin" -> {
             val data = chartData.hemoglobinData.map { it.hemoglobin }.filter { it > 0 }
             val labels = chartData.hemoglobinData.filter { it.hemoglobin > 0 }.map { it.date }
             Pair(data, labels)
@@ -583,7 +583,7 @@ private fun getChartDataForParameter(
             Pair(data, labels)
         }
         else -> {
-            // Default to hemoglobin if parameter not recognized
+            // Default to haemoglobin if parameter not recognized
             val data = chartData.hemoglobinData.map { it.hemoglobin }.filter { it > 0 }
             val labels = chartData.hemoglobinData.filter { it.hemoglobin > 0 }.map { it.date }
             Pair(data, labels)
@@ -718,7 +718,7 @@ private fun PredictionHistoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 VitalSignItem("Glucose", "${item.glucose} mg/dL")
-                VitalSignItem("Hemoglobin", "${item.hemoglobinLevel} g/dL")
+                VitalSignItem("Haemoglobin", "${item.hemoglobinLevel} g/dL")
                 VitalSignItem("HBA1C", "${item.hba1c}%")
             }
 

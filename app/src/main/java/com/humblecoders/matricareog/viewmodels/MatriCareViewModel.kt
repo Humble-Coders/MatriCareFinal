@@ -34,7 +34,7 @@ class MatriCareViewModel(
     val availableParameters: StateFlow<List<String>> = _availableParameters.asStateFlow()
 
     // Selected Parameter for Chart Display
-    private val _selectedParameter = MutableStateFlow("Hemoglobin")
+    private val _selectedParameter = MutableStateFlow("Haemoglobin")
     val selectedParameter: StateFlow<String> = _selectedParameter.asStateFlow()
 
     // Loading states for each tab
@@ -346,7 +346,7 @@ class MatriCareViewModel(
         if (history.size < 2) return "Insufficient Data"
 
         val values = when (parameter.lowercase()) {
-            "hemoglobin" -> history.map { it.hemoglobinLevel }
+            "hemoglobin", "haemoglobin" -> history.map { it.hemoglobinLevel }
             "glucose" -> history.map { it.glucose }
             "systolic" -> history.map { it.systolicBP.toDouble() }
             "diastolic" -> history.map { it.diastolicBP.toDouble() }

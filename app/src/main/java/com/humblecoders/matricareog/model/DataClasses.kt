@@ -169,7 +169,7 @@ data class PregnancyInfo(
             personalInfo.glucose.toFloat(),               // Feature 9: RBS (Random Blood Sugar)
             personalInfo.bodyTemperature.toFloat(),       // Feature 10: BT (Body Temperature)
             personalInfo.pulseRate.toFloat(),             // Feature 11: HR (Heart Rate)
-            personalInfo.hemoglobinLevel.toFloat(),       // Feature 12: Hb (Hemoglobin)
+            personalInfo.hemoglobinLevel.toFloat(),       // Feature 12: Hb (haemoglobin)
             personalInfo.respirationRate.toFloat()        // Feature 13: RR (Respiration Rate)
         )
     }

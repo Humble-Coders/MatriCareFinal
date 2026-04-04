@@ -71,7 +71,7 @@ class ReportRepository {
                 personalInfo.glucose.toFloat(),               // 9. RBS
                 personalInfo.bodyTemperature.toFloat(),       // 10. BodyTemp
                 personalInfo.pulseRate.toFloat(),             // 11. HeartRate
-                personalInfo.hemoglobinLevel.toFloat(),       // 12. HB
+                personalInfo.hemoglobinLevel.toFloat(),       // 12. Hb (haemoglobin)
                 personalInfo.hba1c.toFloat(),                 // 13. HBA1C (user input)
                 personalInfo.respirationRate.toFloat()        // 14. RR
             )
