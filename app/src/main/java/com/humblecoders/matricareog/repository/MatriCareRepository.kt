@@ -189,7 +189,7 @@ class MatriCareRepository(
                 // Add all available parameters based on PersonalInformation structure
                 availableParameters.addAll(
                     listOf(
-                        "Hemoglobin",
+                        "Haemoglobin",
                         "HBA1C",
                         "Blood Glucose",
                         "Blood Pressure",
@@ -257,7 +257,7 @@ class MatriCareRepository(
 
             // Create ChartData with parameter-specific data
             val chartData = when (parameter.lowercase()) {
-                "hemoglobin" -> {
+                "hemoglobin", "haemoglobin" -> {
                     ChartData(
                         hemoglobinData = sortedDataPoints,
                         currentHemoglobin = currentData?.hemoglobin ?: 0.0
@@ -301,7 +301,7 @@ class MatriCareRepository(
                     )
                 }
                 else -> {
-                    // Default to hemoglobin and hba1c
+                    // Default to haemoglobin and HbA1c
                     ChartData(
                         hemoglobinData = sortedDataPoints,
                         hba1cData = sortedDataPoints,

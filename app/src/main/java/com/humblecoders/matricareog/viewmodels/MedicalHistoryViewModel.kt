@@ -114,9 +114,9 @@ class MedicalHistoryViewModel(
             errors["pulseRate"] = "Heart rate must be between 40-180 BPM"
         }
 
-        // Hemoglobin validation (5-20 g/dL)
+        // Haemoglobin validation (5-20 g/dL)
         if (personalInfo.hemoglobinLevel < 5.0 || personalInfo.hemoglobinLevel > 20.0) {
-            errors["hemoglobin"] = "Hemoglobin must be between 5-20 g/dL"
+            errors["hemoglobin"] = "Haemoglobin must be between 5-20 g/dL"
         }
 
         // Respiration Rate validation (8-40 per minute)

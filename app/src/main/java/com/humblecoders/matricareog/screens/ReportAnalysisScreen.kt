@@ -527,14 +527,14 @@ fun VitalsSummarySection(personalInfo: PersonalInformation) {
                     )
                 }
                 
-                // Row 2: Hemoglobin & Respiration
+                // Row 2: Haemoglobin & respiration
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     CompactVitalItem(
                         icon = Icons.Default.Bloodtype,
-                        label = "Hemoglobin",
+                        label = "Haemoglobin",
                         value = try { "%.1f g/dL".format(personalInfo.hemoglobinLevel) } catch (e: Exception) { "N/A" },
                         color = Color(0xFFEF9A9A),
                         modifier = Modifier.weight(1f)
@@ -1034,13 +1034,13 @@ fun DetailedAnalysisSection(
                 icon = R.drawable.respiration
             ),
             createHealthMetric(
-                title = "Hemoglobin Level",
+                title = "Haemoglobin Level",
                 value = "%.1f".format(personalInfo.hemoglobinLevel),
                 unit = "g/dL",
                 currentValue = personalInfo.hemoglobinLevel.toFloat(),
                 rangeMin = 11.0f, // Corrected for pregnancy
                 rangeMax = 16.0f,
-                icon = R.drawable.hemoglobin
+                icon = R.drawable.haemoglobin
             ),
             createHealthMetric(
                 title = "Random Blood Sugar (RBS)",

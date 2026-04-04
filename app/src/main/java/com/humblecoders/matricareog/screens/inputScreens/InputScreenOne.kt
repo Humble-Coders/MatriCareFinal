@@ -376,7 +376,7 @@ fun InputScreenOne(
                         )
                     }
 
-                    // Hemoglobin Field
+                    // Haemoglobin field
                     item {
                         RealTimeValidatedTextField(
                             value = hemoglobinLevel,
@@ -384,14 +384,14 @@ fun InputScreenOne(
                                 hemoglobinLevel = it
                                 hemoglobinError = validateHemoglobin(it)
                             },
-                            label = "Hemoglobin Level (Hb)",
-                            placeholder = "Enter hemoglobin (5-20 g/dL)",
+                            label = "Haemoglobin Level (Hb)",
+                            placeholder = "Enter haemoglobin (5-20 g/dL)",
                             keyboardType = KeyboardType.Decimal,
                             isError = hemoglobinError != null,
                             errorMessage = hemoglobinError,
                             helperText = "Range: 5-20 g/dL",
                             accentColor = accentColor,
-                            guidanceText = "Hemoglobin (Hb) comes from a blood test, often part of antenatal panels. It reflects iron and oxygen-carrying capacity; use the value exactly as on your report (g/dL)."
+                            guidanceText = "Haemoglobin (Hb) comes from a blood test, often part of antenatal panels. It reflects iron and oxygen-carrying capacity; use the value exactly as on your report (g/dL)."
                         )
                     }
 
