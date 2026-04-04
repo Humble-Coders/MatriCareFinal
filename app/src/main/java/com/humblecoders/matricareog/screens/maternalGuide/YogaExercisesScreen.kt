@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -152,28 +153,24 @@ fun YogaExercisesScreen(
 fun YogaExercisesTopBar(
     onBackClick: () -> Unit
 ) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
         title = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Matri",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "Care",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFFE91E63)
-                    )
-                }
+                Text(
+                    text = "Matri",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "Care",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFFE91E63)
+                )
             }
         },
         navigationIcon = {
@@ -211,6 +208,7 @@ fun YogaTrimesterTabs(
             ) {
                 TextButton(
                     onClick = { onTrimesterSelected(trimester) },
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = if (isSelected) Color(0xFFE91E63) else Color.Gray
                     )
@@ -218,26 +216,28 @@ fun YogaTrimesterTabs(
                     Text(
                         text = trimester.displayName,
                         fontSize = 16.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
-                if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .width(60.dp)
-                            .height(3.dp)
-                            .background(
-                                color = Color(0xFFE91E63),
-                                shape = RoundedCornerShape(2.dp)
-                            )
-                    )
-                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                        .height(3.dp)
+                        .background(
+                            color = if (isSelected) Color(0xFFE91E63) else Color.Transparent,
+                            shape = RoundedCornerShape(2.dp)
+                        )
+                )
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun YogaPoseCard(
     pose: YogaPose,
@@ -271,22 +271,34 @@ fun YogaPoseCard(
                         contentScale = ContentScale.Crop
                     )
                     
-                    // Clickable indicator overlay
-                    Box(
+                    // Tap to view full size
+                    Surface(
+                        onClick = { onImageClick(pose.imageRes) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(32.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.8f),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
+                            .padding(8.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.White.copy(alpha = 0.92f),
+                        shadowElevation = 2.dp
                     ) {
-                        Text(
-                            text = "🔍",
-                            fontSize = 16.sp
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ZoomIn,
+                                contentDescription = "View full size image",
+                                tint = Color(0xFF616161),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Enlarge",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF424242)
+                            )
+                        }
                     }
                 } else {
                     // Fallback background with yoga emoji
@@ -321,36 +333,33 @@ fun YogaPoseCard(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    // Pose name and sanskrit name
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = pose.name,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
+                    Text(
+                        text = pose.name,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                        Text(
-                            text = "(${pose.sanskritName})",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
-                    }
+                    Text(
+                        text = pose.sanskritName,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    )
 
-                    // Pink underline
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     Box(
                         modifier = Modifier
-                            .width(60.dp)
+                            .fillMaxWidth()
                             .height(3.dp)
                             .background(
-                                color = pose.borderColor,
+                                color = pose.borderColor.copy(alpha = 0.55f),
                                 shape = RoundedCornerShape(2.dp)
                             )
-                            .padding(top = 8.dp)
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))

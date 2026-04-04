@@ -515,14 +515,14 @@ fun VitalsSummarySection(personalInfo: PersonalInformation) {
                         icon = Icons.Default.Bloodtype,
                         label = "Random Blood Sugar",
                         value = try { "%.1f mg/dL".format(personalInfo.glucose) } catch (e: Exception) { "N/A" },
-                        color = Color(0xFFFF9800),
+                        color = Color(0xFFFFB74D),
                         modifier = Modifier.weight(1f)
                     )
                     CompactVitalItem(
                         icon = Icons.Default.Bloodtype,
                         label = "HbA1c",
                         value = try { "%.1f%%".format(personalInfo.hba1c) } catch (e: Exception) { "N/A" },
-                        color = Color(0xFF9C27B0),
+                        color = Color(0xFFCE93D8),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -536,14 +536,14 @@ fun VitalsSummarySection(personalInfo: PersonalInformation) {
                         icon = Icons.Default.Bloodtype,
                         label = "Hemoglobin",
                         value = try { "%.1f g/dL".format(personalInfo.hemoglobinLevel) } catch (e: Exception) { "N/A" },
-                        color = Color(0xFFF44336),
+                        color = Color(0xFFEF9A9A),
                         modifier = Modifier.weight(1f)
                     )
                     CompactVitalItem(
                         icon = Icons.Default.Air,
                         label = "Respiration",
                         value = "${personalInfo.respirationRate}/min",
-                        color = Color(0xFF00BCD4),
+                        color = Color(0xFF80DEEA),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -580,7 +580,7 @@ private fun CompactVitalItem(
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        color = color.copy(alpha = 0.15f),
+                        color = color.copy(alpha = 0.12f),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -588,7 +588,7 @@ private fun CompactVitalItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = color,
+                    tint = color.copy(alpha = 0.92f),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -986,21 +986,21 @@ fun QuickStatsSection(
         ) {
             QuickStatCard(
                 icon = Icons.Default.Favorite,
-                iconColor = Color(0xFFE91E63),
+                iconColor = Color(0xFFF48FB1),
                 value = bpm.toString(),
                 unit = "BPM",
                 modifier = Modifier.weight(1f)
             )
             QuickStatCard(
                 icon = Icons.Default.Speed,
-                iconColor = Color(0xFF2196F3),
+                iconColor = Color(0xFF90CAF9),
                 value = bloodPressure,
                 unit = "BP",
                 modifier = Modifier.weight(1f)
             )
             QuickStatCard(
                 icon = Icons.Default.DeviceThermostat,
-                iconColor = Color(0xFF4CAF50),
+                iconColor = Color(0xFFA5D6A7),
                 value = "${temperature}°",
                 unit = "TEMP",
                 modifier = Modifier.weight(1f)
@@ -1264,9 +1264,9 @@ fun EnhancedGradientProgressIndicator(
     }
 
     val statusColor = when(status) {
-        "Low" -> Color(0xFFFF6B6B)
-        "High" -> Color(0xFFFF8A50)
-        else -> Color(0xFF4ECDC4)
+        "Low" -> Color(0xFFEF9A9A)
+        "High" -> Color(0xFFFFCC80)
+        else -> Color(0xFF80CBC4)
     }
 
     Column(modifier = modifier) {
@@ -1276,7 +1276,7 @@ fun EnhancedGradientProgressIndicator(
                 .fillMaxWidth()
                 .height(12.dp)
                 .clip(RoundedCornerShape(6.dp))
-                .background(Color(0xFFF5F5F5))
+                .background(Color(0xFFF0F0F0))
         ) {
             // Background gradient track
             Box(
@@ -1285,17 +1285,17 @@ fun EnhancedGradientProgressIndicator(
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF4ECDC4).copy(alpha = 0.2f),
-                                Color(0xFF44E5A3).copy(alpha = 0.2f),
-                                Color(0xFFFFE66D).copy(alpha = 0.2f),
-                                Color(0xFFFF8A50).copy(alpha = 0.2f),
-                                Color(0xFFFF6B6B).copy(alpha = 0.2f)
+                                Color(0xFF80CBC4).copy(alpha = 0.12f),
+                                Color(0xFFA5D6A7).copy(alpha = 0.12f),
+                                Color(0xFFFFF59D).copy(alpha = 0.12f),
+                                Color(0xFFFFCC80).copy(alpha = 0.12f),
+                                Color(0xFFEF9A9A).copy(alpha = 0.12f)
                             )
                         )
                     )
             )
 
-            // Filled progress with vibrant gradient
+            // Filled progress — softer gradient
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -1303,11 +1303,11 @@ fun EnhancedGradientProgressIndicator(
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF4ECDC4),
-                                Color(0xFF44E5A3),
-                                Color(0xFFFFE66D),
-                                Color(0xFFFF8A50),
-                                Color(0xFFFF6B6B)
+                                Color(0xFF80CBC4).copy(alpha = 0.55f),
+                                Color(0xFFA5D6A7).copy(alpha = 0.5f),
+                                Color(0xFFFFF59D).copy(alpha = 0.5f),
+                                Color(0xFFFFCC80).copy(alpha = 0.5f),
+                                Color(0xFFEF9A9A).copy(alpha = 0.5f)
                             )
                         )
                     )
@@ -1327,7 +1327,7 @@ fun EnhancedGradientProgressIndicator(
             Text(
                 text = status,
                 fontSize = 12.sp,
-                color = statusColor,
+                color = statusColor.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Medium
             )
 
@@ -1435,11 +1435,10 @@ fun ModernProgressIndicator(
 }
 
 @Composable
-fun CircularProgressIndicator(
+fun MetricCircularGauge(
     currentValue: Float,
     minValue: Float,
     maxValue: Float,
-    title: String,
     modifier: Modifier = Modifier
 ) {
     val progress = ((currentValue - minValue) / (maxValue - minValue)).coerceIn(0f, 1f)
@@ -1449,41 +1448,32 @@ fun CircularProgressIndicator(
     )
 
     val statusColor = when {
-        progress < 0.3f -> Color(0xFF4ECDC4)
-        progress < 0.7f -> Color(0xFF44E5A3)
-        progress < 0.9f -> Color(0xFFFFE66D)
-        else -> Color(0xFFFF6B6B)
+        progress < 0.3f -> Color(0xFF80CBC4)
+        progress < 0.7f -> Color(0xFFA5D6A7)
+        progress < 0.9f -> Color(0xFFFFF59D)
+        else -> Color(0xFFEF9A9A)
     }
 
     Box(
         modifier = modifier.size(80.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Background circle
         Canvas(
             modifier = Modifier.fillMaxSize()
         ) {
-            val strokeWidth = 8.dp.toPx()
-            val radius = (size.minDimension - strokeWidth) / 2
+            val strokeWidth = 7.dp.toPx()
 
-            // Background arc
             drawArc(
-                color = Color(0xFFF5F5F5),
+                color = Color(0xFFEEEEEE),
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
             )
 
-            // Progress arc with better error handling
             if (progress.isFinite() && !progress.isNaN()) {
                 drawArc(
-                    brush = Brush.sweepGradient(
-                        colors = listOf(
-                            statusColor.copy(alpha = 0.3f),
-                            statusColor
-                        )
-                    ),
+                    color = statusColor.copy(alpha = 0.85f),
                     startAngle = -90f,
                     sweepAngle = animatedProgress * 360f,
                     useCenter = false,
@@ -1492,23 +1482,13 @@ fun CircularProgressIndicator(
             }
         }
 
-        // Center content with better error handling
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = if (progress.isFinite() && !progress.isNaN()) "${(animatedProgress * 100).toInt()}%" else "N/A",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = statusColor
-            )
-            Text(
-                text = title,
-                fontSize = 8.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-        }
+        Text(
+            text = if (progress.isFinite() && !progress.isNaN()) "${(animatedProgress * 100).toInt()}%" else "N/A",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = statusColor.copy(alpha = 0.95f),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -1528,9 +1508,9 @@ fun HealthMetricCard(
     metric: HealthMetric
 ) {
     val statusColor = when(metric.status) {
-        MetricStatus.NORMAL -> Color(0xFF4ECDC4)
-        MetricStatus.WARNING -> Color(0xFFFFE66D)
-        MetricStatus.CRITICAL -> Color(0xFFFF6B6B)
+        MetricStatus.NORMAL -> Color(0xFF80CBC4)
+        MetricStatus.WARNING -> Color(0xFFFFE082)
+        MetricStatus.CRITICAL -> Color(0xFFEF9A9A)
     }
 
     Card(
@@ -1546,17 +1526,19 @@ fun HealthMetricCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                color = statusColor.copy(alpha = 0.1f),
+                                color = statusColor.copy(alpha = 0.14f),
                                 shape = RoundedCornerShape(12.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -1564,12 +1546,12 @@ fun HealthMetricCard(
                         Icon(
                             painter = painterResource(id = metric.icon),
                             contentDescription = null,
-                            tint = statusColor,
+                            tint = statusColor.copy(alpha = 0.95f),
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = metric.title,
                             fontSize = 16.sp,
@@ -1584,34 +1566,37 @@ fun HealthMetricCard(
                     }
                 }
 
-                // Circular progress indicator with fallback
-                if (metric.currentValue.isFinite() && !metric.currentValue.isNaN() && 
-                    metric.rangeMin.isFinite() && !metric.rangeMin.isNaN() && 
-                    metric.rangeMax.isFinite() && !metric.rangeMax.isNaN() && 
-                    metric.rangeMax > metric.rangeMin) {
-                    CircularProgressIndicator(
-                        currentValue = metric.currentValue,
-                        minValue = metric.rangeMin,
-                        maxValue = metric.rangeMax,
-                        title = "Level"
-                    )
-                } else {
-                    // Fallback simple indicator for invalid data
-                    Box(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .background(
-                                color = Color.Gray.copy(alpha = 0.1f),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "N/A",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Gray
+                Box(
+                    modifier = Modifier.size(80.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (metric.currentValue.isFinite() && !metric.currentValue.isNaN() &&
+                        metric.rangeMin.isFinite() && !metric.rangeMin.isNaN() &&
+                        metric.rangeMax.isFinite() && !metric.rangeMax.isNaN() &&
+                        metric.rangeMax > metric.rangeMin) {
+                        MetricCircularGauge(
+                            currentValue = metric.currentValue,
+                            minValue = metric.rangeMin,
+                            maxValue = metric.rangeMax,
+                            modifier = Modifier.size(80.dp)
                         )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .background(
+                                    color = Color.Gray.copy(alpha = 0.08f),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "N/A",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 }
             }

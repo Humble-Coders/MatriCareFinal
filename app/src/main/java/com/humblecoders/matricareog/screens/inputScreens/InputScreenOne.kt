@@ -28,7 +28,7 @@ fun InputScreenOne(
     viewModel: MedicalHistoryViewModel
 ) {
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val pinkColor = Color(0xFFFF6B9B)
+    val accentColor = Color(0xFFBC8F9F)
 
     // Form states with real-time validation
     var age by remember { mutableStateOf("") }
@@ -228,7 +228,7 @@ fun InputScreenOne(
                     Box(
                         modifier = Modifier
                             .size(8.dp)
-                            .background(pinkColor, RoundedCornerShape(4.dp))
+                            .background(accentColor, RoundedCornerShape(4.dp))
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Box(
@@ -247,7 +247,7 @@ fun InputScreenOne(
                     item {
                         Text(
                             text = "Enter Your Medical Information",
-                            color = pinkColor,
+                            color = Color(0xFF5C4A52),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -274,7 +274,8 @@ fun InputScreenOne(
                             isError = ageError != null,
                             errorMessage = ageError,
                             helperText = "Range: 15-49 years",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Enter your age in years. This app supports ages 15–49, which matches typical maternal risk models. Use the value from your ID or last clinic visit."
                         )
                     }
 
@@ -293,7 +294,8 @@ fun InputScreenOne(
                             isError = systolicError != null || bpRelationError != null,
                             errorMessage = systolicError ?: bpRelationError,
                             helperText = "Range: 70-200 mmHg",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Systolic is the higher number (when the heart contracts). Use the reading from your BP monitor or your latest antenatal check-up."
                         )
                     }
 
@@ -312,7 +314,8 @@ fun InputScreenOne(
                             isError = diastolicError != null || bpRelationError != null,
                             errorMessage = diastolicError ?: bpRelationError,
                             helperText = "Range: 40-120 mmHg",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Diastolic is the lower number (when the heart relaxes). It must be lower than systolic. If unsure, ask your nurse to note both numbers clearly."
                         )
                     }
 
@@ -330,7 +333,8 @@ fun InputScreenOne(
                             isError = glucoseError != null,
                             errorMessage = glucoseError,
                             helperText = "Range: 50-400 mg/dL",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Random blood sugar (RBS) is measured at any time of day, not fasting. Use your glucometer or lab report value in mg/dL. If you only have fasting glucose, enter that and mention it to your doctor."
                         )
                     }
 
@@ -348,7 +352,8 @@ fun InputScreenOne(
                             isError = temperatureError != null,
                             errorMessage = temperatureError,
                             helperText = "Range: 95-107°F",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Use degrees Fahrenheit (°F). Oral, ear, or forehead thermometers are fine. If your report is in °C, convert or ask your clinic for the °F value."
                         )
                     }
 
@@ -366,7 +371,8 @@ fun InputScreenOne(
                             isError = pulseError != null,
                             errorMessage = pulseError,
                             helperText = "Range: 40-180 BPM",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Pulse or heart rate in beats per minute (BPM), usually from a vitals check or pulse oximeter. Rest for a few minutes before measuring if you can."
                         )
                     }
 
@@ -384,7 +390,8 @@ fun InputScreenOne(
                             isError = hemoglobinError != null,
                             errorMessage = hemoglobinError,
                             helperText = "Range: 5-20 g/dL",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Hemoglobin (Hb) comes from a blood test, often part of antenatal panels. It reflects iron and oxygen-carrying capacity; use the value exactly as on your report (g/dL)."
                         )
                     }
 
@@ -402,7 +409,8 @@ fun InputScreenOne(
                             isError = hba1cError != null,
                             errorMessage = hba1cError,
                             helperText = "Range: 3-15%",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "HbA1c shows average blood sugar over roughly 3 months. Enter the percentage from your lab report. If you have not had this test, ask your doctor whether it is needed."
                         )
                     }
 
@@ -420,7 +428,8 @@ fun InputScreenOne(
                             isError = respirationError != null,
                             errorMessage = respirationError,
                             helperText = "Range: 8-40 per minute",
-                            pinkColor = pinkColor
+                            accentColor = accentColor,
+                            guidanceText = "Breaths per minute at rest. Count chest rises for one full minute, or use the value recorded at your last visit."
                         )
                     }
 
@@ -448,7 +457,7 @@ fun InputScreenOne(
                                 .height(56.dp)
                                 .padding(vertical = 8.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (allFieldsValid) pinkColor else Color.Gray
+                                containerColor = if (allFieldsValid) accentColor else Color(0xFFBDBDBD)
                             ),
                             shape = RoundedCornerShape(12.dp),
                             enabled = allFieldsValid && !isLoading

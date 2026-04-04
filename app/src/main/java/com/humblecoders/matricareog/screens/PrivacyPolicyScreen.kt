@@ -4,7 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.OpenInNew
@@ -26,7 +28,8 @@ fun PrivacyPolicyScreen(
 ) {
     val context = LocalContext.current
     val privacyPolicyUrl = "https://humble-coders.github.io/MatriCareFinal/"
-    
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,11 +58,12 @@ fun PrivacyPolicyScreen(
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
-        
-        // Content
+
+        // Content (scrollable so long policy text fits all screen sizes)
         Column(
             modifier = Modifier
                 .weight(1f)
+                .verticalScroll(scrollState)
                 .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

@@ -33,7 +33,7 @@ fun InputScreenTwo(
 ) {
     val personalInfo by viewModel.personalInfo.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val pinkColor = Color(0xFFEF5DA8)
+    val accentColor = Color(0xFFBC8F9F)
 
     // Form states with real-time validation
     var gravida by remember { mutableStateOf("") }
@@ -202,7 +202,7 @@ fun InputScreenTwo(
                     Box(
                         modifier = Modifier
                             .size(8.dp)
-                            .background(pinkColor, RoundedCornerShape(4.dp))
+                            .background(accentColor, RoundedCornerShape(4.dp))
                     )
                 }
 
@@ -215,7 +215,7 @@ fun InputScreenTwo(
                     item {
                         Text(
                             text = "Enter Your Pregnancy History",
-                            color = pinkColor,
+                            color = Color(0xFF5C4A52),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -290,8 +290,9 @@ fun InputScreenTwo(
                             isError = gravidaError != null,
                             errorMessage = gravidaError,
                             helperText = "Range: 0-20",
-                            pinkColor = pinkColor,
-                            allowZero = true
+                            accentColor = accentColor,
+                            allowZero = true,
+                            guidanceText = "Gravida is the total number of pregnancies you have had, including the current one. Stillbirths and miscarriages after a positive pregnancy test usually count; confirm with your doctor if unsure."
                         )
                     }
 
@@ -309,8 +310,9 @@ fun InputScreenTwo(
                             isError = paraError != null,
                             errorMessage = paraError,
                             helperText = "Range: 0-15",
-                            pinkColor = pinkColor,
-                            allowZero = true
+                            accentColor = accentColor,
+                            allowZero = true,
+                            guidanceText = "Para counts births at or after about 20 weeks of pregnancy (viable deliveries). It does not include early losses before that threshold unless your provider defines it differently."
                         )
                     }
 
@@ -328,8 +330,9 @@ fun InputScreenTwo(
                             isError = liveBirthsError != null,
                             errorMessage = liveBirthsError,
                             helperText = "Range: 0-15",
-                            pinkColor = pinkColor,
-                            allowZero = true
+                            accentColor = accentColor,
+                            allowZero = true,
+                            guidanceText = "The number of living children you have. Use the count your doctor uses for your chart (including from prior relationships if relevant to your care)."
                         )
                     }
 
@@ -347,8 +350,9 @@ fun InputScreenTwo(
                             isError = abortionsError != null,
                             errorMessage = abortionsError,
                             helperText = "Range: 0-10",
-                            pinkColor = pinkColor,
-                            allowZero = true
+                            accentColor = accentColor,
+                            allowZero = true,
+                            guidanceText = "Pregnancy losses or terminations as recorded in your history. If you are unsure what to include, use your hospital discharge summary or ask your obstetrician."
                         )
                     }
 
@@ -366,8 +370,9 @@ fun InputScreenTwo(
                             isError = childDeathsError != null,
                             errorMessage = childDeathsError,
                             helperText = "Range: 0-10",
-                            pinkColor = pinkColor,
-                            allowZero = true
+                            accentColor = accentColor,
+                            allowZero = true,
+                            guidanceText = "Children who died after birth. This helps your care team understand your history; enter 0 if this does not apply."
                         )
                     }
 
@@ -398,7 +403,7 @@ fun InputScreenTwo(
                                 .height(56.dp)
                                 .padding(vertical = 8.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (allFieldsValid) pinkColor else Color.Gray
+                                containerColor = if (allFieldsValid) accentColor else Color(0xFFBDBDBD)
                             ),
                             shape = RoundedCornerShape(12.dp),
                             enabled = allFieldsValid && !isLoading && personalInfo != null
@@ -438,10 +443,18 @@ fun RealTimeValidatedTextField(
     isError: Boolean = false,
     errorMessage: String? = null,
     helperText: String? = null,
-    pinkColor: Color,
+    accentColor: Color,
     allowZero: Boolean = false,
+    guidanceText: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val softError = Color(0xFFE57373)
+    val softValidBorder = Color(0xFFA5D6A7)
+    val softValidIcon = Color(0xFF66BB6A)
+    val neutralBorder = Color(0xFFE0E0E0)
+
+    var showGuidance by remember(label) { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
@@ -452,22 +465,27 @@ fun RealTimeValidatedTextField(
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = when {
-                    isError -> Color.Red
-                    value.isNotEmpty() && !isError -> Color.Green
-                    else -> Color.LightGray
+                    isError -> softError.copy(alpha = 0.85f)
+                    value.isNotEmpty() && !isError -> softValidBorder.copy(alpha = 0.75f)
+                    else -> neutralBorder
                 },
                 focusedBorderColor = when {
-                    isError -> Color.Red
-                    value.isNotEmpty() && !isError -> Color.Green
-                    else -> pinkColor
+                    isError -> softError
+                    value.isNotEmpty() && !isError -> softValidBorder
+                    else -> accentColor.copy(alpha = 0.85f)
                 },
                 focusedLabelColor = when {
-                    isError -> Color.Red
-                    value.isNotEmpty() && !isError -> Color.Green
-                    else -> pinkColor
+                    isError -> softError
+                    value.isNotEmpty() && !isError -> softValidIcon
+                    else -> accentColor.copy(alpha = 0.9f)
                 },
-                errorBorderColor = Color.Red,
-                errorLabelColor = Color.Red
+                unfocusedLabelColor = when {
+                    isError -> softError
+                    value.isNotEmpty() && !isError -> Color(0xFF757575)
+                    else -> Color(0xFF9E9E9E)
+                },
+                errorBorderColor = softError,
+                errorLabelColor = softError
             ),
             singleLine = true,
             isError = isError,
@@ -477,7 +495,7 @@ fun RealTimeValidatedTextField(
                         Icon(
                             imageVector = Icons.Default.Error,
                             contentDescription = "Error",
-                            tint = Color.Red,
+                            tint = softError,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -485,16 +503,16 @@ fun RealTimeValidatedTextField(
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "Valid",
-                            tint = Color.Green,
+                            tint = softValidIcon,
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    else -> {
-                        IconButton(onClick = { /* Could show info dialog */ }) {
+                    guidanceText != null -> {
+                        IconButton(onClick = { showGuidance = true }) {
                             Icon(
                                 imageVector = Icons.Default.Info,
-                                contentDescription = "Info",
-                                tint = Color.Gray,
+                                contentDescription = "Field guidance",
+                                tint = Color(0xFF9E9E9E),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -503,11 +521,24 @@ fun RealTimeValidatedTextField(
             }
         )
 
+        if (showGuidance && guidanceText != null) {
+            AlertDialog(
+                onDismissRequest = { showGuidance = false },
+                title = { Text(label, fontWeight = FontWeight.SemiBold) },
+                text = { Text(guidanceText) },
+                confirmButton = {
+                    TextButton(onClick = { showGuidance = false }) {
+                        Text("Got it")
+                    }
+                }
+            )
+        }
+
         // Error message
         if (isError && errorMessage != null) {
             Text(
                 text = errorMessage,
-                color = Color.Red,
+                color = softError,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )
@@ -517,7 +548,7 @@ fun RealTimeValidatedTextField(
         if (!isError && helperText != null) {
             Text(
                 text = helperText,
-                color = if (value.isNotEmpty()) Color.Green else Color.Gray,
+                color = Color(0xFF757575),
                 fontSize = 12.sp,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )
