@@ -139,7 +139,8 @@ fun GraphReportScreen(
                     chartData = uiState,
                     selectedParameter = selectedParameter,
                     onRetry = { viewModel.refreshPredictionHistory() },
-                    onClearError = { viewModel.clearPredictionHistoryError() }
+                    onClearError = { viewModel.clearPredictionHistoryError() },
+                    modifier = Modifier.weight(1f)
                 )
                 1 -> RiskHistoryContent(
                     riskHistory = riskHistory,
@@ -147,7 +148,8 @@ fun GraphReportScreen(
                     error = riskError,
                     chartData = uiState,
                     onRetry = { viewModel.refreshRiskHistory() },
-                    onClearError = { viewModel.clearRiskHistoryError() }
+                    onClearError = { viewModel.clearRiskHistoryError() },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -203,11 +205,16 @@ private fun QuickStatsCard(
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(riskSummary.entries.toList()) { (riskLevel, count) ->
-                        RiskSummaryChip(riskLevel = riskLevel, count = count)
+                    riskSummaryEntriesOrdered(riskSummary).forEach { (riskLevel, count) ->
+                        RiskSummaryChip(
+                            riskLevel = riskLevel,
+                            count = count,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
             }
@@ -250,7 +257,8 @@ private fun StatsItem(
 @Composable
 private fun RiskSummaryChip(
     riskLevel: String,
-    count: Int
+    count: Int,
+    modifier: Modifier = Modifier
 ) {
     val (backgroundColor, textColor) = when (riskLevel) {
         "High Risk" -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
@@ -262,23 +270,28 @@ private fun RiskSummaryChip(
     Surface(
         color = backgroundColor,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.padding(2.dp)
+        modifier = modifier.padding(vertical = 2.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = riskLevel,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = textColor
+                color = textColor,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                lineHeight = 14.sp
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Surface(
                 color = textColor,
                 shape = CircleShape,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(22.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -288,12 +301,21 @@ private fun RiskSummaryChip(
                         text = count.toString(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
         }
     }
+}
+
+/** Stable order so risk chips align consistently (label above count). */
+private fun riskSummaryEntriesOrdered(riskSummary: Map<String, Int>): List<Pair<String, Int>> {
+    val order = listOf("No Risk", "Moderate Risk", "High Risk")
+    val ordered = order.mapNotNull { key -> riskSummary[key]?.let { key to it } }
+    val rest = riskSummary.filterKeys { it !in order }.entries.map { it.key to it.value }
+    return ordered + rest
 }
 
 @Composable
@@ -421,11 +443,32 @@ private fun PredictionHistoryContent(
     chartData: MatriCareState,
     selectedParameter: String,
     onRetry: () -> Unit,
-    onClearError: () -> Unit
+    onClearError: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Prediction History",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1A1A1A)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Charts and assessments from your saved medical records",
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = Color(0xFF666666)
+                )
+            }
+        }
+
         // Chart Section
         item {
             Card(
@@ -434,13 +477,20 @@ private fun PredictionHistoryContent(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp)
                 ) {
                     Text(
-                        text = "$selectedParameter Trend",
+                        text = "${selectedParameter.trim()} Trend",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = Color(0xFF1A1A1A)
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Values over time for the selected parameter",
+                        fontSize = 13.sp,
+                        color = Color(0xFF757575)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -464,9 +514,10 @@ private fun PredictionHistoryContent(
                                 LineChartView(
                                     data = dataValues,
                                     labels = labels,
+                                    dataSetLabel = selectedParameter,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(200.dp)
+                                        .height(220.dp)
                                 )
                             } else {
                                 Box(
@@ -478,7 +529,8 @@ private fun PredictionHistoryContent(
                                     Text(
                                         text = "No data available for $selectedParameter",
                                         color = Color.Gray,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(horizontal = 16.dp)
                                     )
                                 }
                             }
@@ -495,13 +547,18 @@ private fun PredictionHistoryContent(
             }
         }
 
-        // Rest of the function remains the same...
         item {
             Text(
                 text = "Medical History Records",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color(0xFF1A1A1A)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Detailed vitals and labs for each saved visit",
+                fontSize = 13.sp,
+                color = Color(0xFF757575)
             )
         }
 
@@ -598,20 +655,32 @@ private fun RiskHistoryContent(
     error: String?,
     chartData: MatriCareState,
     onRetry: () -> Unit,
-    onClearError: () -> Unit
+    onClearError: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
         // Risk History List Section
         item {
-            Text(
-                text = "AI Risk Assessments",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "AI Risk Assessments",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1A1A1A)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Past model predictions with dates and confidence",
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = Color(0xFF666666)
+                )
+            }
         }
 
         if (isLoading) {
@@ -694,11 +763,23 @@ private fun PredictionHistoryCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                VitalSignItem("BP", "${item.systolicBP}/${item.diastolicBP}")
-                VitalSignItem("HR", "${item.pulseRate} BPM")
-                VitalSignItem("Temp", "${item.bodyTemperature}°F")
+                MetricValueCell(
+                    label = "BP",
+                    value = "${item.systolicBP}/${item.diastolicBP}",
+                    modifier = Modifier.weight(1f)
+                )
+                MetricValueCell(
+                    label = "HR",
+                    value = "${item.pulseRate} BPM",
+                    modifier = Modifier.weight(1f)
+                )
+                MetricValueCell(
+                    label = "Temp",
+                    value = "${item.bodyTemperature}°F",
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -715,11 +796,23 @@ private fun PredictionHistoryCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                VitalSignItem("Glucose", "${item.glucose} mg/dL")
-                VitalSignItem("Hemoglobin", "${item.hemoglobinLevel} g/dL")
-                VitalSignItem("HBA1C", "${item.hba1c}%")
+                MetricValueCell(
+                    label = "Glucose",
+                    value = "${item.glucose} mg/dL",
+                    modifier = Modifier.weight(1f)
+                )
+                MetricValueCell(
+                    label = "Hemoglobin",
+                    value = "%.1f g/dL".format(item.hemoglobinLevel),
+                    modifier = Modifier.weight(1f)
+                )
+                MetricValueCell(
+                    label = "HbA1c",
+                    value = "${item.hba1c}%",
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -824,24 +917,37 @@ private fun RiskHistoryCard(
     }
 }
 
+/** Label above value, equal-width columns for aligned grids (vitals / labs). */
 @Composable
-private fun VitalSignItem(
+private fun MetricValueCell(
     label: String,
-    value: String
+    value: String,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
     ) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            lineHeight = 14.sp,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.Gray
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -947,7 +1053,8 @@ private fun ErrorMessage(
 fun LineChartView(
     data: List<Double>,
     labels: List<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dataSetLabel: String = "Data"
 ) {
     AndroidView(
         modifier = modifier,
@@ -974,7 +1081,7 @@ fun LineChartView(
                 Entry(index.toFloat(), value.toFloat())
             }
 
-            val dataSet = LineDataSet(entries, "Data").apply {
+            val dataSet = LineDataSet(entries, dataSetLabel).apply {
                 color = ColorTemplate.COLORFUL_COLORS[0]
                 valueTextColor = android.graphics.Color.BLACK
                 circleRadius = 4f
