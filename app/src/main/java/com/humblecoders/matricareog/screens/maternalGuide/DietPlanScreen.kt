@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import com.humblecoders.matricareog.util.PregnancyUtils
+import com.humblecoders.matricareog.viewmodels.AuthViewModel
 
 // Data classes for diet recommendations
 data class DietRecommendation(
@@ -37,9 +40,23 @@ enum class Trimester(val displayName: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DietPlanScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    authViewModel: AuthViewModel
 ) {
-    var selectedTrimester by remember { mutableStateOf(Trimester.FIRST) }
+    val currentUser = authViewModel.currentUser.collectAsState().value
+    val weeks = PregnancyUtils.currentWeeksPregnant(
+        currentUser?.dueDate.orEmpty(),
+        currentUser?.weeksPregnant.orEmpty()
+    )
+    var selectedTrimester by remember(weeks) {
+        mutableStateOf(
+            when (PregnancyUtils.trimesterTabIndex(weeks)) {
+                0 -> Trimester.FIRST
+                1 -> Trimester.SECOND
+                else -> Trimester.THIRD
+            }
+        )
+    }
     var isRecommendationsExpanded by remember { mutableStateOf(true) }
 
     Scaffold(
@@ -142,6 +159,9 @@ fun DietPlanTopBar(
                     tint = Color(0xFFE91E63)
                 )
             }
+        },
+        actions = {
+            Spacer(modifier = Modifier.width(48.dp))
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White

@@ -512,7 +512,7 @@ fun RealTimeValidatedTextField(
                             Icon(
                                 imageVector = Icons.Default.Info,
                                 contentDescription = "Field guidance",
-                                tint = Color(0xFF9E9E9E),
+                                tint = Color(0xFFE91E63),
                                 modifier = Modifier.size(20.dp)
                             )
                         }

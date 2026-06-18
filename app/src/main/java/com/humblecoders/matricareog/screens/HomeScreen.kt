@@ -76,12 +76,12 @@ fun HomeScreen(
     onDietClicked: () -> Unit = {},
     onYogaClicked: () -> Unit = {},
     onDoClicked: () -> Unit = {},
-    onChatbotClicked: () -> Unit = {}
+    onChatbotClicked: () -> Unit = {},
+    onProfileClicked: () -> Unit = {}
 ) {
     val currentUserState = authViewModel.currentUser.collectAsState()
     val currentUser = currentUserState.value
-    val userName = currentUser?.fullName?.split(" ")?.firstOrNull() ?: "User"//extracts first name from full name
-    //split separates full name to words gets the firts word or null instead of crashing and print user
+    val userName = currentUser?.fullName?.split(" ")?.firstOrNull()?.replaceFirstChar { it.uppercase() } ?: "User"
     val userId = currentUser?.uid ?: ""
     
     // Disclaimer state - only shown when info button is clicked
@@ -103,7 +103,8 @@ fun HomeScreen(
         HeaderSection(//passing authvuewmodel here
             authViewModel = authViewModel,
             onSettingsClicked = onSettingsClicked,
-            onInfoClicked = { showInfoDialog = true }
+            onInfoClicked = { showInfoDialog = true },
+            onProfileClicked = onProfileClicked
         )
 
         LazyColumn(
@@ -162,7 +163,8 @@ fun HomeScreen(
 private fun HeaderSection(
     authViewModel: AuthViewModel,
     onSettingsClicked: () -> Unit,
-    onInfoClicked: () -> Unit
+    onInfoClicked: () -> Unit,
+    onProfileClicked: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -175,7 +177,9 @@ private fun HeaderSection(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Card(
                 shape = CircleShape,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier
+                    .size(48.dp)
+                    .clickable { onProfileClicked() },
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F4FF))
             ) {
                 Box(
@@ -628,7 +632,9 @@ private fun WellnessProgramsSection(
             ) { program ->
                 EnhancedWellnessProgramCard(
                     program = program,
-                    modifier = Modifier.width(220.dp) // Fixed width for consistency
+                    modifier = Modifier
+                        .width(220.dp)
+                        .height(240.dp) // Fixed height for consistency
                 )
             }
         }

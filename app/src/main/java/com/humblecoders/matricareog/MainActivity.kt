@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
         medicalHistoryRepository = MedicalHistoryRepository(firestore)
         reportRepository = ReportRepository()
 
-        authViewModel = AuthViewModel(userRepository)
+        authViewModel = AuthViewModel(userRepository, auth)
         matriCareViewModel = MatriCareViewModel(matriCareRepository)
         medicalHistoryViewModel = MedicalHistoryViewModel(medicalHistoryRepository)
         reportAnalysisViewModel = ReportAnalysisViewModel(reportRepository)
@@ -237,7 +237,40 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onChatbotClicked = {
                                     navController.navigate(Routes.CHATBOT)
+                                },
+                                onProfileClicked = {
+                                    navController.navigate(Routes.PROFILE)
                                 }
+                            )
+                        }
+
+                        composable(Routes.PROFILE) {
+                            ProfileScreen(
+                                authViewModel = authViewModel,
+                                onBackClick = { navController.popBackStack() },
+                                onEditProfileClick = { navController.navigate(Routes.EDIT_PROFILE) },
+                                onPrivacySecurityClick = { navController.navigate(Routes.PRIVACY_SECURITY) },
+                                onLanguageAccessibilityClick = { navController.navigate(Routes.LANGUAGE_ACCESSIBILITY) }
+                            )
+                        }
+
+                        composable(Routes.EDIT_PROFILE) {
+                            EditProfileScreen(
+                                authViewModel = authViewModel,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+
+                        composable(Routes.PRIVACY_SECURITY) {
+                            PrivacySecurityScreen(
+                                onBackClick = { navController.popBackStack() },
+                                onViewPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) }
+                            )
+                        }
+
+                        composable(Routes.LANGUAGE_ACCESSIBILITY) {
+                            LanguageAccessibilityScreen(
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
 
@@ -309,15 +342,24 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Routes.DIET_PLAN) {
-                            DietPlanScreen(onBackClick = { navController.popBackStack() })
+                            DietPlanScreen(
+                                onBackClick = { navController.popBackStack() },
+                                authViewModel = authViewModel
+                            )
                         }
 
                         composable(Routes.DOS_AND_DONTS) {
-                            DosAndDontsScreen(onBackClick = { navController.popBackStack() })
+                            DosAndDontsScreen(
+                                onBackClick = { navController.popBackStack() },
+                                authViewModel = authViewModel
+                            )
                         }
 
                         composable(Routes.YOGA_EXERCISES) {
-                            YogaExercisesScreen(onBackClick = { navController.popBackStack() })
+                            YogaExercisesScreen(
+                                onBackClick = { navController.popBackStack() },
+                                authViewModel = authViewModel
+                            )
                         }
 
                     }
@@ -365,6 +407,10 @@ object Routes {
     const val REPORT_ANALYSIS = "ReportAnalysisScreen/{userId}"
     const val MATRICARE = "GraphReportScreen"
     const val CHATBOT = "ChatbotScreen"
+    const val PROFILE = "ProfileScreen"
+    const val EDIT_PROFILE = "EditProfileScreen"
+    const val PRIVACY_SECURITY = "PrivacySecurityScreen"
+    const val LANGUAGE_ACCESSIBILITY = "LanguageAccessibilityScreen"
 
     fun medicalHistory1Route(userId: String) = "WelcomeScreenOne/$userId"
     fun medicalHistory2Route(userId: String) = "WelcomeScreenTwo/$userId"

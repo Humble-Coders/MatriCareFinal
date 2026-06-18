@@ -24,6 +24,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import com.humblecoders.matricareog.R
+import androidx.compose.runtime.collectAsState
+import com.humblecoders.matricareog.util.PregnancyUtils
+import com.humblecoders.matricareog.viewmodels.AuthViewModel
 
 // Data class for yoga poses
 data class YogaPose(
@@ -39,9 +42,23 @@ data class YogaPose(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun YogaExercisesScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    authViewModel: AuthViewModel
 ) {
-    var selectedTrimester by remember { mutableStateOf(Trimester.FIRST) }
+    val currentUser = authViewModel.currentUser.collectAsState().value
+    val weeks = PregnancyUtils.currentWeeksPregnant(
+        currentUser?.dueDate.orEmpty(),
+        currentUser?.weeksPregnant.orEmpty()
+    )
+    var selectedTrimester by remember(weeks) {
+        mutableStateOf(
+            when (PregnancyUtils.trimesterTabIndex(weeks)) {
+                0 -> Trimester.FIRST
+                1 -> Trimester.SECOND
+                else -> Trimester.THIRD
+            }
+        )
+    }
     var fullScreenImage by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(

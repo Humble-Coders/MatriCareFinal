@@ -1,13 +1,20 @@
 package com.humblecoders.matricareog.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -22,9 +29,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.humblecoders.matricareog.model.ChartData
 import com.humblecoders.matricareog.model.MatriCareState
 import com.humblecoders.matricareog.repository.MatriCareRepository
+import com.humblecoders.matricareog.util.ChartPoint
+import com.humblecoders.matricareog.util.HealthRangeUtils
 import com.humblecoders.matricareog.viewmodels.MatriCareViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Description
@@ -33,7 +41,6 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,60 +105,61 @@ fun GraphReportScreen(
             )
         )
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Quick Stats Card
-            QuickStatsCard(
-                totalRecords = totalRecords,
-                lastUpdate = lastUpdateDate,
-                riskSummary = riskSummary
-            )
+            item {
+                QuickStatsCard(
+                    totalRecords = totalRecords,
+                    lastUpdate = lastUpdateDate,
+                    riskSummary = riskSummary
+                )
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                TabSection(
+                    selectedTab = selectedTab,
+                    onTabSelected = viewModel::selectTab
+                )
+            }
 
-            // Tab Row
-            TabSection(
-                selectedTab = selectedTab,
-                onTabSelected = viewModel::selectTab
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Parameter Selection (only for Prediction History)
             if (selectedTab == 0 && availableParameters.isNotEmpty()) {
-                ParameterSelectionRow(
-                    parameters = availableParameters,
-                    selectedParameter = selectedParameter,
-                    onParameterSelected = viewModel::selectParameter
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+                item {
+                    ParameterSelectionRow(
+                        parameters = availableParameters,
+                        selectedParameter = selectedParameter,
+                        onParameterSelected = viewModel::selectParameter
+                    )
+                }
             }
 
-            // Content based on selected tab
             when (selectedTab) {
-                0 -> PredictionHistoryContent(
-                    predictionHistory = predictionHistory,
-                    isLoading = isPredictionLoading,
-                    error = predictionError,
-                    chartData = uiState,
-                    selectedParameter = selectedParameter,
-                    onRetry = { viewModel.refreshPredictionHistory() },
-                    onClearError = { viewModel.clearPredictionHistoryError() },
-                    modifier = Modifier.weight(1f)
-                )
-                1 -> RiskHistoryContent(
-                    riskHistory = riskHistory,
-                    isLoading = isRiskLoading,
-                    error = riskError,
-                    chartData = uiState,
-                    onRetry = { viewModel.refreshRiskHistory() },
-                    onClearError = { viewModel.clearRiskHistoryError() },
-                    modifier = Modifier.weight(1f)
-                )
+                0 -> {
+                    predictionHistoryContentItems(
+                        predictionHistory = predictionHistory,
+                        isLoading = isPredictionLoading,
+                        error = predictionError,
+                        chartData = uiState,
+                        selectedParameter = selectedParameter,
+                        onRetry = { viewModel.refreshPredictionHistory() },
+                        onClearError = { viewModel.clearPredictionHistoryError() }
+                    )
+                }
+                1 -> {
+                    riskHistoryContentItems(
+                        riskHistory = riskHistory,
+                        isLoading = isRiskLoading,
+                        error = riskError,
+                        onRetry = { viewModel.refreshRiskHistory() },
+                        onClearError = { viewModel.clearRiskHistoryError() }
+                    )
+                }
             }
+
+            item { Spacer(modifier = Modifier.height(24.dp)) }
         }
     }
 }
@@ -380,6 +388,7 @@ private fun TabButton(
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun ParameterSelectionRow(
     parameters: List<String>,
@@ -395,10 +404,12 @@ private fun ParameterSelectionRow(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        androidx.compose.foundation.layout.FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            items(parameters) { parameter ->
+            parameters.forEach { parameter ->
                 ParameterChip(
                     parameter = parameter,
                     isSelected = parameter == selectedParameter,
@@ -433,288 +444,218 @@ private fun ParameterChip(
     }
 }
 
-// Replace the PredictionHistoryContent composable in GraphReportScreen.kt
-
-@Composable
-private fun PredictionHistoryContent(
+private fun LazyListScope.predictionHistoryContentItems(
     predictionHistory: List<MatriCareRepository.PredictionHistoryItem>,
     isLoading: Boolean,
     error: String?,
     chartData: MatriCareState,
     selectedParameter: String,
     onRetry: () -> Unit,
-    onClearError: () -> Unit,
-    modifier: Modifier = Modifier
+    onClearError: () -> Unit
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Column(modifier = Modifier.fillMaxWidth()) {
+    item {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Prediction History",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A1A1A)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Charts and assessments from your saved medical records",
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = Color(0xFF666666)
+            )
+        }
+    }
+
+    item {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp)) {
                 Text(
-                    text = "Prediction History",
-                    fontSize = 20.sp,
+                    text = "${selectedParameter.trim()} Trend",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A1A1A)
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Charts and assessments from your saved medical records",
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = Color(0xFF666666)
+                    text = "Values over time for the selected parameter",
+                    fontSize = 13.sp,
+                    color = Color(0xFF757575)
                 )
-            }
-        }
-
-        // Chart Section
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp)
-                ) {
-                    Text(
-                        text = "${selectedParameter.trim()} Trend",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A1A1A)
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Values over time for the selected parameter",
-                        fontSize = 13.sp,
-                        color = Color(0xFF757575)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    when (chartData) {
-                        is MatriCareState.Loading -> {
+                Spacer(modifier = Modifier.height(16.dp))
+                when (chartData) {
+                    is MatriCareState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFFE91E63))
+                        }
+                    }
+                    is MatriCareState.Success -> {
+                        val chartPoints = HealthRangeUtils.chartPointsForParameter(
+                            chartData.chartData,
+                            selectedParameter
+                        )
+                        if (chartPoints.isNotEmpty()) {
+                            Column {
+                                LineChartView(
+                                    points = chartPoints,
+                                    dataSetLabel = selectedParameter,
+                                    modifier = Modifier.fillMaxWidth().height(220.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                ChartRiskLegend()
+                            }
+                        } else {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
+                                modifier = Modifier.fillMaxWidth().height(200.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(color = Color(0xFFE91E63))
-                            }
-                        }
-                        is MatriCareState.Success -> {
-                            // Get the correct data and labels based on selected parameter
-                            val (dataValues, labels) = getChartDataForParameter(chartData.chartData, selectedParameter)
-
-                            if (dataValues.isNotEmpty() && labels.isNotEmpty()) {
-                                LineChartView(
-                                    data = dataValues,
-                                    labels = labels,
-                                    dataSetLabel = selectedParameter,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(220.dp)
+                                Text(
+                                    text = "No data available for $selectedParameter",
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
                                 )
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "No data available for $selectedParameter",
-                                        color = Color.Gray,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                    )
-                                }
                             }
                         }
-                        is MatriCareState.Error -> {
-                            ErrorMessage(
-                                message = chartData.message,
-                                onRetry = onRetry,
-                                isAuthError = chartData.message.contains("not authenticated", ignoreCase = true)
-                            )
-                        }
+                    }
+                    is MatriCareState.Error -> {
+                        ErrorMessage(
+                            message = chartData.message,
+                            onRetry = onRetry,
+                            isAuthError = chartData.message.contains("not authenticated", ignoreCase = true)
+                        )
                     }
                 }
             }
         }
+    }
 
-        item {
-            Text(
-                text = "Medical History Records",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A1A1A)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Detailed vitals and labs for each saved visit",
-                fontSize = 13.sp,
-                color = Color(0xFF757575)
+    item {
+        Text(
+            text = "Medical History Records",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A1A1A)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Tap a record to expand full details",
+            fontSize = 13.sp,
+            color = Color(0xFF757575)
+        )
+    }
+
+    when {
+        isLoading -> item {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color(0xFFE91E63))
+            }
+        }
+        error != null -> item {
+            ErrorMessage(message = error, onRetry = onRetry, onDismiss = onClearError)
+        }
+        predictionHistory.isEmpty() -> item {
+            EmptyStateCard(
+                title = "No Medical History",
+                message = "Complete your medical history assessment to see data here.",
+                icon = Icons.Default.HistoryEdu
             )
         }
-
-        if (isLoading) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color(0xFFE91E63))
-                }
-            }
-        } else if (error != null) {
-            item {
-                ErrorMessage(
-                    message = error,
-                    onRetry = onRetry,
-                    onDismiss = onClearError
-                )
-            }
-        } else if (predictionHistory.isEmpty()) {
-            item {
-                EmptyStateCard(
-                    title = "No Medical History",
-                    message = "Complete your medical history assessment to see data here.",
-                    icon = Icons.Default.HistoryEdu
-                )
-            }
-        } else {
-            items(predictionHistory) { item ->
-                PredictionHistoryCard(item = item)
-            }
+        else -> items(predictionHistory, key = { it.id }) { item ->
+            PredictionHistoryCard(item = item)
         }
     }
 }
 
-// Add this helper function to get the correct data for each parameter
-private fun getChartDataForParameter(
-    chartData: ChartData,
-    selectedParameter: String
-): Pair<List<Double>, List<String>> {
-    return when (selectedParameter.lowercase()) {
-        "hemoglobin" -> {
-            val data = chartData.hemoglobinData.map { it.hemoglobin }.filter { it > 0 }
-            val labels = chartData.hemoglobinData.filter { it.hemoglobin > 0 }.map { it.date }
-            Pair(data, labels)
+private fun LazyListScope.riskHistoryContentItems(
+    riskHistory: List<MatriCareRepository.RiskHistoryItem>,
+    isLoading: Boolean,
+    error: String?,
+    onRetry: () -> Unit,
+    onClearError: () -> Unit
+) {
+    item {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "AI Risk Assessments",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A1A1A)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Tap a record to expand full details",
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = Color(0xFF666666)
+            )
         }
-        "hba1c" -> {
-            val data = chartData.hba1cData.map { it.hba1c }.filter { it > 0 }
-            val labels = chartData.hba1cData.filter { it.hba1c > 0 }.map { it.date }
-            Pair(data, labels)
+    }
+
+    when {
+        isLoading -> item {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color(0xFFE91E63))
+            }
         }
-        "glucose", "blood glucose" -> {
-            val data = chartData.glucoseData.map { it.glucose }.filter { it > 0 }
-            val labels = chartData.glucoseData.filter { it.glucose > 0 }.map { it.date }
-            Pair(data, labels)
+        error != null -> item {
+            ErrorMessage(message = error, onRetry = onRetry, onDismiss = onClearError)
         }
-        "blood pressure" -> {
-            // For blood pressure, we'll show systolic values
-            val data = chartData.bloodPressureData.map { it.systolicBP }.filter { it > 0 }
-            val labels = chartData.bloodPressureData.filter { it.systolicBP > 0 }.map { it.date }
-            Pair(data, labels)
+        riskHistory.isEmpty() -> item {
+            EmptyStateCard(
+                title = "No Risk Assessments",
+                message = "Complete your medical assessment to get AI-powered risk predictions.",
+                icon = Icons.Default.Security
+            )
         }
-        "heart rate", "pulse" -> {
-            val data = chartData.pulseData.map { it.pulseRate }.filter { it > 0 }
-            val labels = chartData.pulseData.filter { it.pulseRate > 0 }.map { it.date }
-            Pair(data, labels)
+        else -> items(riskHistory, key = { it.id }) { item ->
+            RiskHistoryCard(item = item)
         }
-        "body temperature", "temperature" -> {
-            val data = chartData.temperatureData.map { it.bodyTemperature }.filter { it > 0 }
-            val labels = chartData.temperatureData.filter { it.bodyTemperature > 0 }.map { it.date }
-            Pair(data, labels)
-        }
-        "respiration rate", "respiration" -> {
-            val data = chartData.respirationData.map { it.respirationRate }.filter { it > 0 }
-            val labels = chartData.respirationData.filter { it.respirationRate > 0 }.map { it.date }
-            Pair(data, labels)
-        }
-        else -> {
-            // Default to hemoglobin if parameter not recognized
-            val data = chartData.hemoglobinData.map { it.hemoglobin }.filter { it > 0 }
-            val labels = chartData.hemoglobinData.filter { it.hemoglobin > 0 }.map { it.date }
-            Pair(data, labels)
-        }
+    }
+}
+
+// Chart data is built in HealthRangeUtils.chartPointsForParameter
+
+@Composable
+private fun ChartRiskLegend() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        LegendDot(color = Color(0xFF2E7D32), label = "In range (no risk)")
+        Spacer(modifier = Modifier.width(16.dp))
+        LegendDot(color = Color(0xFFD32F2F), label = "Out of range (risk)")
     }
 }
 
 @Composable
-private fun RiskHistoryContent(
-    riskHistory: List<MatriCareRepository.RiskHistoryItem>,
-    isLoading: Boolean,
-    error: String?,
-    chartData: MatriCareState,
-    onRetry: () -> Unit,
-    onClearError: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-
-        // Risk History List Section
-        item {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "AI Risk Assessments",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A1A)
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Past model predictions with dates and confidence",
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = Color(0xFF666666)
-                )
-            }
-        }
-
-        if (isLoading) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color(0xFFE91E63))
-                }
-            }
-        } else if (error != null) {
-            item {
-                ErrorMessage(
-                    message = error,
-                    onRetry = onRetry,
-                    onDismiss = onClearError
-                )
-            }
-        } else if (riskHistory.isEmpty()) {
-            item {
-                EmptyStateCard(
-                    title = "No Risk Assessments",
-                    message = "Complete your medical assessment to get AI-powered risk predictions.",
-                    icon = Icons.Default.Security
-                )
-            }
-        } else {
-            items(riskHistory) { item ->
-                RiskHistoryCard(item = item)
-            }
-        }
+private fun LegendDot(color: Color, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .background(color, CircleShape)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(text = label, fontSize = 11.sp, color = Color(0xFF757575))
     }
 }
 
@@ -722,117 +663,76 @@ private fun RiskHistoryContent(
 private fun PredictionHistoryCard(
     item: MatriCareRepository.PredictionHistoryItem
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { expanded = !expanded },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = item.date,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFE91E63)
-                )
+                Column {
+                    Text(
+                        text = item.date,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE91E63)
+                    )
+                    if (item.riskLevel.isNotBlank()) {
+                        Text(
+                            text = if (item.riskLevel.contains("High", true) || item.riskLevel.contains("Moderate", true)) "Risk Detected" else "No Risk",
+                            fontSize = 12.sp,
+                            color = if (item.riskLevel.contains("High", true) || item.riskLevel.contains("Moderate", true)) Color(0xFFD32F2F) else Color(0xFF2E7D32),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(20.dp)
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = Color(0xFFE91E63),
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Vital Signs
-            Text(
-                text = "Vital Signs",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
             ) {
-                MetricValueCell(
-                    label = "BP",
-                    value = "${item.systolicBP}/${item.diastolicBP}",
-                    modifier = Modifier.weight(1f)
-                )
-                MetricValueCell(
-                    label = "HR",
-                    value = "${item.pulseRate} BPM",
-                    modifier = Modifier.weight(1f)
-                )
-                MetricValueCell(
-                    label = "Temp",
-                    value = "${item.bodyTemperature}°F",
-                    modifier = Modifier.weight(1f)
-                )
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MedicalRecordDetails(
+                        age = item.age,
+                        systolicBP = item.systolicBP,
+                        diastolicBP = item.diastolicBP,
+                        pulseRate = item.pulseRate,
+                        bodyTemperature = item.bodyTemperature,
+                        glucose = item.glucose,
+                        hemoglobinLevel = item.hemoglobinLevel,
+                        hba1c = item.hba1c,
+                        respirationRate = item.respirationRate,
+                        gravida = item.gravida,
+                        para = item.para,
+                        liveBirths = item.liveBirths,
+                        abortions = item.abortions,
+                        childDeaths = item.childDeaths,
+                        riskLevel = item.riskLevel
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Lab Values
-            Text(
-                text = "Lab Values",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                MetricValueCell(
-                    label = "Glucose",
-                    value = "${item.glucose} mg/dL",
-                    modifier = Modifier.weight(1f)
-                )
-                MetricValueCell(
-                    label = "Hemoglobin",
-                    value = "%.1f g/dL".format(item.hemoglobinLevel),
-                    modifier = Modifier.weight(1f)
-                )
-                MetricValueCell(
-                    label = "HbA1c",
-                    value = "${item.hba1c}%",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Obstetric History
-            Text(
-                text = "Obstetric History",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "G${item.gravida}P${item.para}L${item.liveBirths}A${item.abortions}D${item.childDeaths}",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFFE91E63)
-            )
         }
     }
 }
@@ -841,6 +741,7 @@ private fun PredictionHistoryCard(
 private fun RiskHistoryCard(
     item: MatriCareRepository.RiskHistoryItem
 ) {
+    var expanded by remember { mutableStateOf(false) }
     val (cardColor, textColor, icon) = when (item.riskLevel) {
         "High Risk" -> Triple(
             Color(0xFFFFEBEE),
@@ -852,7 +753,7 @@ private fun RiskHistoryCard(
             Color(0xFFFF6F00),
             Icons.Default.Info
         )
-        "No Risk" -> Triple(
+        "Low Risk", "No Risk" -> Triple(
             Color(0xFFE8F5E8),
             Color(0xFF2E7D32),
             Icons.Default.CheckCircle
@@ -865,55 +766,157 @@ private fun RiskHistoryCard(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { expanded = !expanded },
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = textColor,
-                modifier = Modifier.size(32.dp)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = item.riskLevel,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = textColor
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = textColor,
+                    modifier = Modifier.size(32.dp)
                 )
-                Text(
-                    text = item.date,
-                    fontSize = 14.sp,
-                    color = textColor.copy(alpha = 0.7f)
-                )
-                if (item.confidence > 0) {
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Confidence: ${(item.confidence * 100).toInt()}%",
-                        fontSize = 12.sp,
-                        color = textColor.copy(alpha = 0.6f)
+                        text = item.date,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
+                    )
+                    Text(
+                        text = item.riskLevel,
+                        fontSize = 14.sp,
+                        color = textColor.copy(alpha = 0.9f)
+                    )
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = textColor,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    if (item.confidence > 0) {
+                        Text(
+                            text = "Confidence: ${(item.confidence * 100).toInt()}%",
+                            fontSize = 12.sp,
+                            color = textColor.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                    MedicalRecordDetails(
+                        age = item.age,
+                        systolicBP = item.systolicBP,
+                        diastolicBP = item.diastolicBP,
+                        pulseRate = item.pulseRate,
+                        bodyTemperature = item.bodyTemperature,
+                        glucose = item.glucose,
+                        hemoglobinLevel = item.hemoglobinLevel,
+                        hba1c = item.hba1c,
+                        respirationRate = item.respirationRate,
+                        gravida = item.gravida,
+                        para = item.para,
+                        liveBirths = item.liveBirths,
+                        abortions = item.abortions,
+                        childDeaths = item.childDeaths,
+                        riskLevel = item.riskLevel,
+                        contentColor = textColor
                     )
                 }
             }
-
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = textColor.copy(alpha = 0.5f),
-                modifier = Modifier.size(20.dp)
-            )
         }
+    }
+}
+
+@Composable
+private fun MedicalRecordDetails(
+    age: Int,
+    systolicBP: Int,
+    diastolicBP: Int,
+    pulseRate: Int,
+    bodyTemperature: Double,
+    glucose: Double,
+    hemoglobinLevel: Double,
+    hba1c: Double,
+    respirationRate: Int,
+    gravida: Int,
+    para: Int,
+    liveBirths: Int,
+    abortions: Int,
+    childDeaths: Int,
+    riskLevel: String,
+    contentColor: Color = Color(0xFFE91E63)
+) {
+    HorizontalDivider(color = contentColor.copy(alpha = 0.15f))
+    Spacer(modifier = Modifier.height(12.dp))
+
+    if (age > 0) {
+        DetailRow("Age", "$age years", contentColor)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+    if (riskLevel.isNotBlank()) {
+        DetailRow("Risk Level", riskLevel, contentColor)
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+
+    Text("Vital Signs", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF666666))
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        MetricValueCell(label = "BP", value = "$systolicBP/$diastolicBP", modifier = Modifier.weight(1f))
+        MetricValueCell(label = "HR", value = "$pulseRate BPM", modifier = Modifier.weight(1f))
+        MetricValueCell(label = "Temp", value = "${bodyTemperature}°F", modifier = Modifier.weight(1f))
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        MetricValueCell(label = "Respiration", value = "$respirationRate/min", modifier = Modifier.weight(1f))
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
+    Text("Lab Values", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF666666))
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        MetricValueCell(label = "Glucose", value = "$glucose mg/dL", modifier = Modifier.weight(1f))
+        MetricValueCell(label = "Hemoglobin", value = "%.1f g/dL".format(hemoglobinLevel), modifier = Modifier.weight(1f))
+        MetricValueCell(label = "HbA1c", value = "$hba1c%", modifier = Modifier.weight(1f))
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
+    Text("Obstetric History", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF666666))
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = "Gravida: $gravida  •  Para: $para\nLive Births: $liveBirths  •  Abortions: $abortions\nChild Deaths: $childDeaths",
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = contentColor,
+        lineHeight = 22.sp
+    )
+}
+
+@Composable
+private fun DetailRow(label: String, value: String, color: Color) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, fontSize = 13.sp, color = Color(0xFF666666))
+        Text(value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = color)
     }
 }
 
@@ -1051,11 +1054,11 @@ private fun ErrorMessage(
 
 @Composable
 fun LineChartView(
-    data: List<Double>,
-    labels: List<String>,
+    points: List<ChartPoint>,
     modifier: Modifier = Modifier,
     dataSetLabel: String = "Data"
 ) {
+    val labels = points.map { it.label }
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -1077,17 +1080,23 @@ fun LineChartView(
             }
         },
         update = { chart ->
-            val entries = data.mapIndexed { index, value ->
-                Entry(index.toFloat(), value.toFloat())
+            chart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+
+            val entries = points.mapIndexed { index, point ->
+                Entry(index.toFloat(), point.value.toFloat())
+            }
+
+            val circleColors = points.map { point ->
+                HealthRangeUtils.riskColorInt(point.inRange)
             }
 
             val dataSet = LineDataSet(entries, dataSetLabel).apply {
-                color = ColorTemplate.COLORFUL_COLORS[0]
+                color = android.graphics.Color.LTGRAY
                 valueTextColor = android.graphics.Color.BLACK
-                circleRadius = 4f
+                circleRadius = 6f
                 setDrawValues(true)
                 setDrawCircles(true)
-                circleColors = listOf(android.graphics.Color.BLUE)
+                setCircleColors(circleColors)
                 lineWidth = 2f
             }
 

@@ -33,7 +33,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,6 +61,7 @@ fun SignUpScreen(
     authViewModel: AuthViewModel = viewModel()
 ) {
     var fullName by remember { mutableStateOf("") }
+    var age by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -92,13 +92,6 @@ fun SignUpScreen(
             AuthResult.Idle -> {
                 // Do nothing, waiting for user action
             }
-        }
-    }
-
-// Clear error state when component is disposed
-    DisposableEffect(Unit) {
-        onDispose {
-            authViewModel.clearAuthState()
         }
     }
 
@@ -171,6 +164,38 @@ fun SignUpScreen(
                 focusedBorderColor = primaryPink,
                 cursorColor = primaryPink
             ),
+            singleLine = true,
+            enabled = !isLoading
+        )
+
+        // Age Field
+        OutlinedTextField(
+            value = age,
+            onValueChange = { age = it },
+            placeholder = {
+                Text(
+                    text = "Enter your age",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Age icon",
+                    tint = darkGray
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = Color.LightGray,
+                focusedBorderColor = primaryPink,
+                cursorColor = primaryPink
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             enabled = !isLoading
         )
@@ -311,8 +336,8 @@ fun SignUpScreen(
         // Sign Up Button
         Button(
             onClick = {
-                Log.d("SignUpScreen", "$email, $password, $confirmPassword, $fullName")
-                authViewModel.signUp(email, password, confirmPassword, fullName)
+                Log.d("SignUpScreen", "$email, $password, $confirmPassword, $fullName, $age")
+                authViewModel.signUp(email, password, confirmPassword, fullName, age)
             },
             modifier = Modifier
                 .fillMaxWidth()

@@ -8,7 +8,19 @@ import androidx.compose.ui.graphics.Color
 data class User(
     val fullName: String = "",
     val email: String = "",
-    val uid: String = ""
+    val uid: String = "",
+    val age: String = "",
+    val bloodGroup: String = "",
+    val allergies: String = "",
+    val doctorName: String = "",
+    val diet: String = "",
+    val activityLevel: String = "",
+    val sleep: String = "",
+    val weight: String = "",
+    val mood: String = "",
+    val dueDate: String = "",
+    val weeksPregnant: String = "",
+    val firstPregnancy: String = ""
 )
 
 @Keep

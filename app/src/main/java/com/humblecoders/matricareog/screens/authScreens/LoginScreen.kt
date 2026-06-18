@@ -31,7 +31,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -64,7 +63,8 @@ fun LoginScreen(
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     val authState by authViewModel.authState.collectAsState()
-    val isLoading = authState is AuthResult.Loading
+    //is a state flow a stream of values from the view model.collectAsState 
+    val isLoading = authState is AuthResult.Loading //used in 3 places disabling the button input filed and showing the spineer
 
     // Colors
     val primaryPink = Color(0xFFE91E63)
@@ -74,7 +74,9 @@ fun LoginScreen(
     LaunchedEffect(authState) {
         when (val state = authState) {
             is AuthResult.Success -> {
-                onNavigateToHome()
+                if (state.user != null) {
+                    onNavigateToHome()
+                }
             }
             is AuthResult.Error -> {
                 if (state.message != "Not authenticated") {
@@ -87,12 +89,6 @@ fun LoginScreen(
             AuthResult.Idle -> {
                 // Do nothing, waiting for user action
             }
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            authViewModel.clearAuthState()
         }
     }
 
@@ -136,12 +132,7 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 48.dp)
             )
 
-            if (authState is AuthResult.Error && (authState as AuthResult.Error).message != "Not authenticated") {
-                ErrorMessage(
-                    message = (authState as AuthResult.Error).message,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-            }
+            if (authState is AuthResult.Error && (authState as AuthResult.Error).message != "Not authenticated") { ErrorMessage( message = (authState as AuthResult.Error).message, modifier = Modifier.padding(bottom = 24.dp) ) }
 
 val isEmailError = email.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 

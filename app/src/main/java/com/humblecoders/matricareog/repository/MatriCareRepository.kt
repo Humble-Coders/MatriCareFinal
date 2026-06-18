@@ -38,7 +38,8 @@ class MatriCareRepository(
         val para: Int = 0,
         val liveBirths: Int = 0,
         val abortions: Int = 0,
-        val childDeaths: Int = 0
+        val childDeaths: Int = 0,
+        val riskLevel: String = ""
     )
 
     @Keep
@@ -48,7 +49,21 @@ class MatriCareRepository(
         val timestamp: Long = 0L,
         val riskLevel: String = "",
         val confidence: Float = 0f,
-        val mlPredictionTimestamp: Long? = null
+        val mlPredictionTimestamp: Long? = null,
+        val age: Int = 0,
+        val systolicBP: Int = 0,
+        val diastolicBP: Int = 0,
+        val glucose: Double = 0.0,
+        val bodyTemperature: Double = 0.0,
+        val pulseRate: Int = 0,
+        val hemoglobinLevel: Double = 0.0,
+        val hba1c: Double = 0.0,
+        val respirationRate: Int = 0,
+        val gravida: Int = 0,
+        val para: Int = 0,
+        val liveBirths: Int = 0,
+        val abortions: Int = 0,
+        val childDeaths: Int = 0
     )
 
     // Replace your getUserPredictionHistory() method with this:
@@ -94,7 +109,8 @@ class MatriCareRepository(
                         para = history.pregnancyHistory.para,
                         liveBirths = history.pregnancyHistory.liveBirths,
                         abortions = history.pregnancyHistory.abortions,
-                        childDeaths = history.pregnancyHistory.childDeaths
+                        childDeaths = history.pregnancyHistory.childDeaths,
+                        riskLevel = history.mlRiskLevel ?: "Unknown"
                     )
                     predictionHistory.add(item)
                 }
@@ -146,7 +162,21 @@ class MatriCareRepository(
                             timestamp = predictionDate,
                             riskLevel = history.mlRiskLevel ?: "Unknown",
                             confidence = 0f,
-                            mlPredictionTimestamp = history.mlPredictionTimestamp
+                            mlPredictionTimestamp = history.mlPredictionTimestamp,
+                            age = history.personalInformation.age,
+                            systolicBP = history.personalInformation.systolicBloodPressure,
+                            diastolicBP = history.personalInformation.diastolicBloodPressure,
+                            glucose = history.personalInformation.glucose,
+                            bodyTemperature = history.personalInformation.bodyTemperature,
+                            pulseRate = history.personalInformation.pulseRate,
+                            hemoglobinLevel = history.personalInformation.hemoglobinLevel,
+                            hba1c = history.personalInformation.hba1c,
+                            respirationRate = history.personalInformation.respirationRate,
+                            gravida = history.pregnancyHistory.gravida,
+                            para = history.pregnancyHistory.para,
+                            liveBirths = history.pregnancyHistory.liveBirths,
+                            abortions = history.pregnancyHistory.abortions,
+                            childDeaths = history.pregnancyHistory.childDeaths
                         )
                         riskHistory.add(item)
                     }

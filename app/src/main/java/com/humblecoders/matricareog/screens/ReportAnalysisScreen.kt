@@ -277,7 +277,7 @@ private fun DebugInfoCard(
             }
 
             if (pregnancyHistory != null) {
-                Text("G${pregnancyHistory.gravida}P${pregnancyHistory.para}L${pregnancyHistory.liveBirths}A${pregnancyHistory.abortions}D${pregnancyHistory.childDeaths}", fontSize = 11.sp, color = Color.Gray)
+                Text("Gravida: ${pregnancyHistory.gravida}, Para: ${pregnancyHistory.para}\nLive Births: ${pregnancyHistory.liveBirths}, Abortions: ${pregnancyHistory.abortions}\nChild Deaths: ${pregnancyHistory.childDeaths}", fontSize = 11.sp, color = Color.Gray)
             }
         }
     }
@@ -654,8 +654,8 @@ fun PregnancyHistorySection(pregnancyHistory: PregnancyHistory) {
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "G${pregnancyHistory.gravida}P${pregnancyHistory.para}L${pregnancyHistory.liveBirths}A${pregnancyHistory.abortions}D${pregnancyHistory.childDeaths}",
-                fontSize = 16.sp,
+                text = "Gravida: ${pregnancyHistory.gravida}, Para: ${pregnancyHistory.para}\nLive Births: ${pregnancyHistory.liveBirths}, Abortions: ${pregnancyHistory.abortions}\nChild Deaths: ${pregnancyHistory.childDeaths}",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFFE91E63)
             )

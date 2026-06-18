@@ -5,16 +5,19 @@ package com.humblecoders.matricareog.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.humblecoders.matricareog.model.AuthResult
 import com.humblecoders.matricareog.model.User
 import com.humblecoders.matricareog.repository.UserRepository
+import com.humblecoders.matricareog.util.PregnancyUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthResult>(AuthResult.Idle)
@@ -23,17 +26,33 @@ class AuthViewModel(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+    /** True after the first auth/session check finishes (success or failure). */
+    private val _sessionChecked = MutableStateFlow(false)
+    val sessionChecked: StateFlow<Boolean> = _sessionChecked.asStateFlow()
+
     // Form validation states
     private val _isTermsAccepted = MutableStateFlow(false)
     val isTermsAccepted: StateFlow<Boolean> = _isTermsAccepted.asStateFlow()
 
-
-
     init {
+        auth.addAuthStateListener { firebaseAuth ->
+            val firebaseUser = firebaseAuth.currentUser
+            if (firebaseUser == null) {
+                _currentUser.value = null
+            } else if (_currentUser.value?.uid != firebaseUser.uid) {
+                viewModelScope.launch {
+                    val result = userRepository.checkCurrentUser()
+                    if (result is AuthResult.Success) {
+                        _currentUser.value = result.user
+                        _authState.value = result
+                    }
+                }
+            }
+        }
         checkAuthState()
     }
 
-    fun signUp(email: String, password: String, confirmPassword: String, fullName: String) {
+    fun signUp(email: String, password: String, confirmPassword: String, fullName: String, age: String) {
         val validationError = validateSignUpInputs(email, password, confirmPassword, fullName)
         if (validationError != null) {
             _authState.value = AuthResult.Error(validationError)
@@ -43,8 +62,8 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _authState.value = AuthResult.Loading
-            Log.d("UserViewModel", "$email, $password, $fullName")
-            val result = userRepository.signUp(email, password, fullName)
+            Log.d("UserViewModel", "$email, $password, $fullName, $age")
+            val result = userRepository.signUp(email, password, fullName, age)
             _authState.value = result
 
             if (result is AuthResult.Success) {
@@ -65,6 +84,15 @@ class AuthViewModel(
             val result = userRepository.login(email, password)
             _authState.value = result
 
+            if (result is AuthResult.Success) {
+                _currentUser.value = result.user
+            }
+        }
+    }
+
+    fun updateUserProfile(user: User) {
+        viewModelScope.launch {
+            val result = userRepository.updateUser(user)
             if (result is AuthResult.Success) {
                 _currentUser.value = result.user
             }
@@ -126,6 +154,7 @@ class AuthViewModel(
 
     fun checkAuthState() {
         viewModelScope.launch {
+            _sessionChecked.value = false
             try {
                 val result = userRepository.checkCurrentUser()
                 _authState.value = result
@@ -133,21 +162,36 @@ class AuthViewModel(
                 when (result) {
                     is AuthResult.Success -> _currentUser.value = result.user
                     is AuthResult.Error -> {
-                        _currentUser.value = null
-                        Log.w("AuthViewModel", "Auth check failed: ${result.message}")
+                        if (result.message == "Not authenticated") {
+                            _currentUser.value = null
+                            Log.w("AuthViewModel", "Auth check failed: ${result.message}")
+                        } else {
+                            Log.w("AuthViewModel", "Auth check warning: ${result.message}")
+                        }
                     }
-                    is AuthResult.Loading -> {
-                        // Handle loading state
-                    }
-                    is AuthResult.Idle -> {
-                        _currentUser.value = null
-                    }
+                    is AuthResult.Loading -> Unit
+                    is AuthResult.Idle -> _currentUser.value = null
                 }
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Auth state check failed", e)
                 _authState.value = AuthResult.Error("Authentication check failed")
-                _currentUser.value = null
+            } finally {
+                _sessionChecked.value = true
             }
+        }
+    }
+
+    /** Syncs Firestore weeksPregnant when due date implies a new week (e.g. after reopening the app). */
+    fun syncPregnancyWeeksIfNeeded() {
+        val user = _currentUser.value ?: return
+        if (!PregnancyUtils.hasDueDate(user.dueDate)) return
+
+        val liveWeeks = PregnancyUtils.currentWeeksPregnant(user.dueDate, user.weeksPregnant)
+        if (liveWeeks <= 0) return
+
+        val storedWeeks = user.weeksPregnant.toIntOrNull() ?: 0
+        if (liveWeeks != storedWeeks) {
+            updateUserProfile(user.copy(weeksPregnant = liveWeeks.toString()))
         }
     }
 

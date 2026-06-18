@@ -12,10 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humblecoders.matricareog.DataStoreManager
 import com.humblecoders.matricareog.viewmodels.AuthViewModel
-import com.humblecoders.matricareog.model.AuthResult
 import kotlinx.coroutines.delay
 
 @Composable
@@ -23,7 +21,7 @@ fun SplashScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToWelcome: () -> Unit,
     onNavigateToTerms: () -> Unit,
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
     val primaryPink = Color(0xFFE91E63)
@@ -36,39 +34,20 @@ fun SplashScreen(
     }
 
     LaunchedEffect(Unit) {
-        println("🔵 SplashScreen: Starting initial delay and auth check")
-        delay(2000) // Show splash for 2 seconds
-        println("🔵 SplashScreen: Delay completed, checking auth state")
-        // Add a small delay to ensure DataStore is loaded
-        delay(100)
-        authViewModel.checkAuthState()
+        delay(1500)
     }
 
-    val authState by authViewModel.authState.collectAsState()
+    val sessionChecked by authViewModel.sessionChecked.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    // Single navigation logic that waits for everything to be ready
-    LaunchedEffect(authState, currentUser, termsAccepted) {
-        // Wait for DataStore to load and auth check to complete
-        if (authState != AuthResult.Idle) {
-            println("🔵 SplashScreen: Navigation logic triggered - termsAccepted=$termsAccepted, currentUser=${currentUser != null}, authState=$authState")
-            
-            when {
-                currentUser != null -> {
-                    println("🔵 SplashScreen: Navigating to HOME")
-                    onNavigateToHome()
-                }
-                termsAccepted -> {
-                    println("🔵 SplashScreen: Navigating to WELCOME")
-                    onNavigateToWelcome()
-                }
-                else -> {
-                    println("🔵 SplashScreen: Navigating to TERMS")
-                    onNavigateToTerms()
-                }
-            }
-        } else {
-            println("🔵 SplashScreen: Waiting for auth check to complete - termsAccepted=$termsAccepted, currentUser=${currentUser != null}, authState=$authState")
+    LaunchedEffect(sessionChecked, currentUser, termsAccepted) {
+        if (!sessionChecked) return@LaunchedEffect
+        delay(800)
+
+        when {
+            currentUser != null -> onNavigateToHome()
+            termsAccepted -> onNavigateToWelcome()
+            else -> onNavigateToTerms()
         }
     }
 

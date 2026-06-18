@@ -21,6 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import com.humblecoders.matricareog.util.PregnancyUtils
+import com.humblecoders.matricareog.viewmodels.AuthViewModel
 
 // Data classes for the tips
 data class TipItem(
@@ -38,10 +41,18 @@ data class TrimesterTips(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DosAndDontsScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    authViewModel: AuthViewModel
 ) {
+    val currentUser = authViewModel.currentUser.collectAsState().value
+    val weeks = PregnancyUtils.currentWeeksPregnant(
+        currentUser?.dueDate.orEmpty(),
+        currentUser?.weeksPregnant.orEmpty()
+    )
     var selectedTabIndex by remember { mutableStateOf(0) }
-    var selectedTrimester by remember { mutableStateOf(0) }
+    var selectedTrimester by remember(weeks) {
+        mutableIntStateOf(PregnancyUtils.trimesterTabIndex(weeks))
+    }
 
     val tabs = listOf("Do's", "Don'ts")
     val trimesters = listOf("1st Trimester", "2nd Trimester", "3rd Trimester")
@@ -429,6 +440,9 @@ fun DosAndDontsTopBar(
                     tint = Color.Black
                 )
             }
+        },
+        actions = {
+            Spacer(modifier = Modifier.width(48.dp))
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White
