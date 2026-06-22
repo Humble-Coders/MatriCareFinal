@@ -7,8 +7,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.humblecoders.matricareog.DataStoreManager
 import com.humblecoders.matricareog.model.AuthResult
 import com.humblecoders.matricareog.model.User
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
 
 class UserRepository(
     private val auth: FirebaseAuth,
@@ -44,7 +46,7 @@ class UserRepository(
                 }
 
                 Log.d("UserRepository", "User created successfully: $user")
-                dataStoreManager.saveLoggedInUserId(firebaseUser.uid)
+                dataStoreManager.saveUserSession(firebaseUser.uid, email, fullName)
                 AuthResult.Success(user)
             } else {
                 AuthResult.Error("Failed to create user account")
@@ -62,7 +64,7 @@ class UserRepository(
 
             if (firebaseUser != null) {
                 val user = fetchUserFromFirestore(firebaseUser) ?: buildFallbackUser(firebaseUser)
-                dataStoreManager.saveLoggedInUserId(firebaseUser.uid)
+                dataStoreManager.saveUserSession(firebaseUser.uid, user.email, user.fullName)
                 Log.d("UserRepository", "Login successful: $user")
                 AuthResult.Success(user)
             } else {
@@ -74,42 +76,63 @@ class UserRepository(
         }
     }
 
-    private suspend fun awaitFirebaseUser(): FirebaseUser? {
-        auth.currentUser?.let { return it }
-
-        val expectSession = !dataStoreManager.getLoggedInUserId().isNullOrBlank()
-        if (!expectSession) {
-            return null
-        }
-
-        repeat(10) { attempt ->
-            delay(300L * (attempt + 1) / 2)
-            auth.currentUser?.let { return it }
-        }
-        return auth.currentUser
-    }
-
     suspend fun checkCurrentUser(): AuthResult {
-        return try {
-            val firebaseUser = awaitFirebaseUser()
-            if (firebaseUser == null) {
-                dataStoreManager.clearLoggedInUserId()
-                return AuthResult.Error("Not authenticated")
+        // The ONLY thing that determines if the user is logged in is auth.currentUser.
+        // Never return Error just because a Firestore network call fails —
+        // that would log out a perfectly valid user whenever their connection
+        // is slow or momentarily drops (e.g. right after the OS restarts the process).
+        val firebaseUser = awaitRestoredFirebaseUser()
+        if (firebaseUser == null) {
+            val session = dataStoreManager.getUserSession()
+            if (session.isLoggedIn && !session.userId.isNullOrBlank()) {
+                Log.w("UserRepository", "checkCurrentUser: Firebase session missing, restoring from DataStore")
+                return AuthResult.Success(
+                    User(
+                        uid = session.userId,
+                        email = session.email ?: "",
+                        fullName = session.name ?: ""
+                    )
+                )
             }
+            return AuthResult.Error("Not authenticated").also {
+                Log.d("UserRepository", "checkCurrentUser: no Firebase session")
+            }
+        }
 
-            val user = fetchUserFromFirestore(firebaseUser) ?: buildFallbackUser(firebaseUser)
-            dataStoreManager.saveLoggedInUserId(firebaseUser.uid)
-            Log.d("UserRepository", "Current user found: $user")
+        return try {
+            val userDoc = firestore.collection("users")
+                .document(firebaseUser.uid)
+                .get()
+                .await()
+            val user = userDoc.toObject(User::class.java) ?: buildFallbackUser(firebaseUser)
+            Log.d("UserRepository", "checkCurrentUser: found uid=${firebaseUser.uid}")
             AuthResult.Success(user)
         } catch (e: Exception) {
-            Log.e("UserRepository", "Check current user error: ${e.message}", e)
-            val firebaseUser = auth.currentUser
-            if (firebaseUser != null) {
-                dataStoreManager.saveLoggedInUserId(firebaseUser.uid)
-                AuthResult.Success(buildFallbackUser(firebaseUser))
-            } else {
-                dataStoreManager.clearLoggedInUserId()
-                AuthResult.Error("Not authenticated")
+            // Firestore unavailable (no network, timeout, etc.) — keep the user logged in.
+            Log.w("UserRepository", "Firestore unavailable on session restore, using fallback: ${e.message}")
+            AuthResult.Success(buildFallbackUser(firebaseUser))
+        }
+    }
+
+    private suspend fun awaitRestoredFirebaseUser(timeoutMs: Long = 3000L): FirebaseUser? {
+        auth.currentUser?.let { return it }
+
+        return withTimeoutOrNull(timeoutMs) {
+            suspendCancellableCoroutine { cont ->
+                lateinit var listener: FirebaseAuth.AuthStateListener
+                listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+                    val user = firebaseAuth.currentUser
+                    if (user != null && cont.isActive) {
+                        auth.removeAuthStateListener(listener)
+                        cont.resume(user)
+                    }
+                }
+
+                auth.addAuthStateListener(listener)
+
+                cont.invokeOnCancellation {
+                    auth.removeAuthStateListener(listener)
+                }
             }
         }
     }
@@ -144,7 +167,7 @@ class UserRepository(
     suspend fun logout(): AuthResult {
         return try {
             auth.signOut()
-            dataStoreManager.clearLoggedInUserId()
+            dataStoreManager.clearUserSession()
             Log.d("UserRepository", "User logged out successfully")
             AuthResult.Error("Not authenticated")
         } catch (e: Exception) {

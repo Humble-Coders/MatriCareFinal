@@ -26,7 +26,6 @@ class AuthViewModel(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
-    /** True after the first auth/session check finishes (success or failure). */
     private val _sessionChecked = MutableStateFlow(false)
     val sessionChecked: StateFlow<Boolean> = _sessionChecked.asStateFlow()
 
@@ -34,22 +33,24 @@ class AuthViewModel(
     private val _isTermsAccepted = MutableStateFlow(false)
     val isTermsAccepted: StateFlow<Boolean> = _isTermsAccepted.asStateFlow()
 
+    private var startupAuthListener: FirebaseAuth.AuthStateListener? = null
+
     init {
-        auth.addAuthStateListener { firebaseAuth ->
-            val firebaseUser = firebaseAuth.currentUser
-            if (firebaseUser == null) {
-                _currentUser.value = null
-            } else if (_currentUser.value?.uid != firebaseUser.uid) {
-                viewModelScope.launch {
-                    val result = userRepository.checkCurrentUser()
-                    if (result is AuthResult.Success) {
-                        _currentUser.value = result.user
-                        _authState.value = result
-                    }
-                }
-            }
+        // Firebase session restoration is asynchronous on cold start.
+        // Wait for auth-state callback once, then run our session check.
+        startupAuthListener = FirebaseAuth.AuthStateListener {
+            Log.d("AuthViewModel", "startup auth callback: firebaseUser=${auth.currentUser?.uid}")
+            startupAuthListener?.let(auth::removeAuthStateListener)
+            startupAuthListener = null
+            checkAuthState()
         }
-        checkAuthState()
+        auth.addAuthStateListener(startupAuthListener!!)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        startupAuthListener?.let(auth::removeAuthStateListener)
+        startupAuthListener = null
     }
 
     fun signUp(email: String, password: String, confirmPassword: String, fullName: String, age: String) {
@@ -155,19 +156,17 @@ class AuthViewModel(
     fun checkAuthState() {
         viewModelScope.launch {
             _sessionChecked.value = false
+            Log.d("AuthViewModel", "checkAuthState: started")
             try {
                 val result = userRepository.checkCurrentUser()
                 _authState.value = result
+                Log.d("AuthViewModel", "checkAuthState: result=${result::class.simpleName}")
 
                 when (result) {
                     is AuthResult.Success -> _currentUser.value = result.user
                     is AuthResult.Error -> {
-                        if (result.message == "Not authenticated") {
-                            _currentUser.value = null
-                            Log.w("AuthViewModel", "Auth check failed: ${result.message}")
-                        } else {
-                            Log.w("AuthViewModel", "Auth check warning: ${result.message}")
-                        }
+                        _currentUser.value = null
+                        Log.w("AuthViewModel", "Auth check failed: ${result.message}")
                     }
                     is AuthResult.Loading -> Unit
                     is AuthResult.Idle -> _currentUser.value = null
@@ -175,6 +174,7 @@ class AuthViewModel(
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Auth state check failed", e)
                 _authState.value = AuthResult.Error("Authentication check failed")
+                _currentUser.value = null
             } finally {
                 _sessionChecked.value = true
             }

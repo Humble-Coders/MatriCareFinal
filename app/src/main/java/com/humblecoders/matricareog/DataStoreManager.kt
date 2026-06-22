@@ -14,9 +14,20 @@ import kotlinx.coroutines.flow.map
 /** Local app preferences. Firebase Auth holds the session; we cache login hint for cold start. */
 class DataStoreManager(private val context: Context) {
 
+    data class UserSession(
+        val isLoggedIn: Boolean,
+        val userId: String?,
+        val email: String?,
+        val name: String?
+    )
+
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("auth_preferences")
 
+        private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        private val USER_ID = stringPreferencesKey("user_id")
+        private val USER_EMAIL = stringPreferencesKey("user_email")
+        private val USER_NAME = stringPreferencesKey("user_name")
         private val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
         private val DISCLAIMER_SHOWN = booleanPreferencesKey("disclaimer_shown")
         private val LOGGED_IN_USER_ID = stringPreferencesKey("logged_in_user_id")
@@ -36,6 +47,36 @@ class DataStoreManager(private val context: Context) {
 
     suspend fun getLoggedInUserId(): String? {
         return context.dataStore.data.first()[LOGGED_IN_USER_ID]
+    }
+
+    suspend fun getUserSession(): UserSession {
+        val preferences = context.dataStore.data.first()
+        return UserSession(
+            isLoggedIn = preferences[IS_LOGGED_IN] ?: false,
+            userId = preferences[USER_ID] ?: preferences[LOGGED_IN_USER_ID],
+            email = preferences[USER_EMAIL],
+            name = preferences[USER_NAME]
+        )
+    }
+
+    suspend fun saveUserSession(userId: String, email: String, name: String) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_LOGGED_IN] = true
+            preferences[USER_ID] = userId
+            preferences[USER_EMAIL] = email
+            preferences[USER_NAME] = name
+            preferences[LOGGED_IN_USER_ID] = userId
+        }
+    }
+
+    suspend fun clearUserSession() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(IS_LOGGED_IN)
+            preferences.remove(USER_ID)
+            preferences.remove(USER_EMAIL)
+            preferences.remove(USER_NAME)
+            preferences.remove(LOGGED_IN_USER_ID)
+        }
     }
 
     suspend fun saveLoggedInUserId(userId: String) {

@@ -57,7 +57,7 @@ fun EditProfileScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val weeksInt = rememberLiveWeeksPregnant(user.dueDate, user.weeksPregnant)
-0    val trimesterLabel = if (weeksInt > 0) PregnancyUtils.getTrimesterLabel(weeksInt) else "-"
+    val trimesterLabel = if (weeksInt > 0) PregnancyUtils.getTrimesterLabel(weeksInt) else "-"
 
     if (showDatePicker) {
         DueDatePickerDialog(

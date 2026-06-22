@@ -1,5 +1,6 @@
 package com.humblecoders.matricareog.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
@@ -13,8 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import com.humblecoders.matricareog.DataStoreManager
+import com.humblecoders.matricareog.model.AuthResult
 import com.humblecoders.matricareog.viewmodels.AuthViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
@@ -27,27 +28,31 @@ fun SplashScreen(
     val primaryPink = Color(0xFFE91E63)
     val dataStoreManager = remember { DataStoreManager(context) }
     val termsAccepted by dataStoreManager.termsAccepted.collectAsState(initial = false)
-    
-    // Log DataStore changes
-    LaunchedEffect(termsAccepted) {
-        println("🔵 SplashScreen: termsAccepted changed to: $termsAccepted")
-    }
 
-    LaunchedEffect(Unit) {
-        delay(1500)
-    }
-
-    val sessionChecked by authViewModel.sessionChecked.collectAsState()
+    val authState by authViewModel.authState.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
+    val sessionChecked by authViewModel.sessionChecked.collectAsState()
 
-    LaunchedEffect(sessionChecked, currentUser, termsAccepted) {
-        if (!sessionChecked) return@LaunchedEffect
-        delay(800)
-
-        when {
-            currentUser != null -> onNavigateToHome()
-            termsAccepted -> onNavigateToWelcome()
-            else -> onNavigateToTerms()
+    LaunchedEffect(sessionChecked, authState, currentUser, termsAccepted) {
+        if (sessionChecked && authState != AuthResult.Idle) {
+            Log.d(
+                "SplashScreen",
+                "navigate gate: checked=$sessionChecked auth=${authState::class.simpleName} user=${currentUser?.uid} terms=$termsAccepted"
+            )
+            when {
+                currentUser != null -> {
+                    Log.d("SplashScreen", "navigate: HOME")
+                    onNavigateToHome()
+                }
+                termsAccepted -> {
+                    Log.d("SplashScreen", "navigate: WELCOME")
+                    onNavigateToWelcome()
+                }
+                else -> {
+                    Log.d("SplashScreen", "navigate: TERMS")
+                    onNavigateToTerms()
+                }
+            }
         }
     }
 
@@ -58,7 +63,6 @@ fun SplashScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.padding(bottom = 32.dp)
@@ -77,7 +81,6 @@ fun SplashScreen(
             )
         }
 
-        // Loading indicator
         CircularProgressIndicator(
             color = primaryPink,
             modifier = Modifier.size(32.dp)
@@ -90,6 +93,5 @@ fun SplashScreen(
             fontSize = 16.sp,
             color = Color.Gray
         )
-
     }
 }

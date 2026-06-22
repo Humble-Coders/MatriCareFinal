@@ -79,7 +79,9 @@ fun SignUpScreen(
     LaunchedEffect(authState) {
         when (val state = authState) {
             is AuthResult.Success -> {
-                onNavigateToHome()
+                if (state.user != null) {
+                    onNavigateToHome()
+                }
             }
             is AuthResult.Error -> {
                 if (state.message != "Not authenticated") {
